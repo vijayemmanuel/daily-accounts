@@ -15,28 +15,21 @@ object ExpenseField {
 
   class Backend($: BackendScope[Props, State]) {
 
-    def onValueChange(e: ReactEvent) = {
-      val newValue = e.target.attributes.getNamedItem("value").nodeValue
-      println(newValue)
-      Callback($.modState(s => s.copy(newValue.toInt)).runNow())
-      //$.forceUpdate()
+    def onValueChange(e: ReactEventFromInput) = {
+      $.modState(s => s.copy(e.target.value.toInt))
     }
 
     def recieveProps: Callback = {
-      Callback.log("Mounted ExpenseField")
+      Callback.log("Recieve Props Update to ExpenseField")
       $.modState((s,p) => s.copy(p.defaultExpense))
 
     }
 
     def render(props: Props, state: State): VdomElement = {
-      //val proxy = props.proxy()
-      //val userInfoOpt = proxy.userInfo
-
       FormControl(fullWidth = false, variant = FormControl.Variant.Outlined)(
         InputLabel()(props.label),
         OutlinedInput(startAdornment = VdomNode("\u20B9"),`type` = "number",
-          //defaultValue = js.Any.fromInt(state.localExpense),
-          //value = js.Any.fromInt(state.localExpense), readOnly = false,
+          value = js.Any.fromInt(state.localExpense), readOnly = false,
           labelWidth = 100, onChange = onValueChange _)
       )
     }

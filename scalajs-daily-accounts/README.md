@@ -1,11 +1,11 @@
-# scalajs-seed-template
-ScalaJS seed template to kick start development using scalajs-react and Diode(optional)
+# scalajs-daily-accounts
+ScalaJS application for managing my daily expenses. You will need to host and run the API services 'lambda-expenses-api' before launching.
 
 Commands to Build and Run
 
 `fastOptJS::webpack`
 
-Copy index.html from assets folder and paste it in target\scala-2.12\scalajs-bundler\main
+Copy assets\index.html  and paste it in target\scala-2.12\scalajs-bundler\main
 
 `fastOptJS::startWebpackDevServer`
 
