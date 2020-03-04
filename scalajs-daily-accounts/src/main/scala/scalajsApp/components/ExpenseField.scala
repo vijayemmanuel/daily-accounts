@@ -1,9 +1,10 @@
 package scalajsApp.components
 
+import diode.react.ModelProxy
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.vdom.html_<^._
 import org.rebeam.mui.{FormControl, InputLabel, OutlinedInput}
-
+import scalajsApp.diode.AppState
 
 import scala.scalajs.js
 
@@ -11,7 +12,7 @@ object ExpenseField {
 
   case class State(localExpense: Int)
 
-  case class Props(label: String, defaultExpense: Int)
+  case class Props(proxy: ModelProxy[AppState], label: String, defaultExpense: Int)
 
   class Backend($: BackendScope[Props, State]) {
 
@@ -20,7 +21,7 @@ object ExpenseField {
     }
 
     def recieveProps: Callback = {
-      Callback.log("Recieve Props Update to ExpenseField")
+      Callback.log("Receive Props Update to ExpenseField")
       $.modState((s,p) => s.copy(p.defaultExpense))
 
     }

@@ -1,5 +1,7 @@
 package scalajsApp.components
 
+import diode.react.ModelProxy
+
 import scala.scalajs.js
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.extra.router.{Resolution, RouterCtl}
@@ -8,6 +10,7 @@ import org.rebeam.mui.styles.Styles
 import scalajsApp.external.icons.Menu
 import scalajsApp.config.Config
 import org.rebeam.mui.{AppBar, FormLabel, IconButton, MuiThemeProvider, Tab, Tabs, Toolbar, Typography}
+import scalajsApp.diode.AppState
 import scalajsApp.pages
 import scalajsApp.pages.{CurrentMonthPanel, ExpenditurePanel}
 import scalajsApp.router.AppRouter
@@ -30,7 +33,11 @@ object TabModel {
 
 object Layout {
 
-  case class Props(ctl: RouterCtl[Page], r : Resolution[Page])
+  case class Props(
+                    proxy: ModelProxy[AppState],
+                    ctl: RouterCtl[Page],
+                    r : Resolution[Page]
+                  )
 
   case class State (selectedTabIdx : String)
 

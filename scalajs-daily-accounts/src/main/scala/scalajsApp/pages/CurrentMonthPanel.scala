@@ -1,11 +1,13 @@
 package scalajsApp.pages
 
+import diode.react.ModelProxy
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.vdom.html_<^._
 import japgolly.scalajs.react.extra.router.RouterCtl
 import org.rebeam.mui.Grid.Lg
 import org.rebeam.mui.{Button, Card, DatePicker, FormControl, Grid, InputLabel, MenuItem, NativeSelect, OutlinedInput, Select, TextField, Typography}
 import scalajsApp.components.ExpenseField
+import scalajsApp.diode.AppState
 import scalajsApp.router.AppRouter
 
 import scala.scalajs.js
@@ -14,7 +16,7 @@ import scala.scalajs.js
 object CurrentMonthPanel {
 
   case class Props(
-                    //proxy: ModelProxy[AppState],
+                    proxy: ModelProxy[AppState],
                     ctl: RouterCtl[AppRouter.Page]
                   )
 
@@ -62,7 +64,7 @@ object CurrentMonthPanel {
             justify = Grid.Justify.SpaceAround,
             alignItems = Grid.AlignItems.Center,
             item = true, lg = Grid.Lg._4)(
-            ExpenseField(ExpenseField.Props("Food Amount",0)),
+            ExpenseField(ExpenseField.Props(props.proxy, "Food Amount",0)),
             FormControl(fullWidth = false,variant = FormControl.Variant.Outlined,disabled = true)(
               InputLabel()("Cumulative"),
               OutlinedInput(startAdornment = VdomNode("\u20B9"  + "1000"),labelWidth = 100)
@@ -70,10 +72,10 @@ object CurrentMonthPanel {
           ),
           <.br(),
           <.br(),
-          ExpenseField(ExpenseField.Props("Transport Amount",0)),
+          ExpenseField(ExpenseField.Props(props.proxy, "Transport Amount",0)),
           <.br(),
           <.br(),
-          ExpenseField(ExpenseField.Props("Utility Amount",0)),
+          ExpenseField(ExpenseField.Props(props.proxy, "Utility Amount",0)),
           <.br(),
           <.br(),
           Button(variant =  Button.Variant.Contained,color = Button.Color.Primary)(VdomNode("Save"))

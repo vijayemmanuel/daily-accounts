@@ -7,7 +7,7 @@ name := "scalajs-daily-accounts"
 
 version := "0.1"
 
-scalaVersion := "2.12.4"
+scalaVersion := "2.12.10"
 
 
 
@@ -26,6 +26,9 @@ libraryDependencies += "io.circe" %%% "circe-core" % "0.8.0"
 libraryDependencies += "io.circe" %%% "circe-parser" % "0.8.0"
 libraryDependencies += "io.circe" %%% "circe-generic" % "0.8.0"
 libraryDependencies += "io.circe" %%% "circe-generic-extras" % "0.8.0"
+libraryDependencies += "io.suzaku" %%% "diode" % "1.1.5"
+//libraryDependencies += "io.suzaku" %%% "diode-devtools" % "1.1.5"
+libraryDependencies += "io.suzaku" %%% "diode-react" % "1.1.5.142"
 
 libraryDependencies += "org.rebeam" %%% "scalajs-react-material-ui" % "0.0.1-SNAPSHOT"
 

@@ -2,6 +2,8 @@ package scalajsApp.pages
 
 import java.time.LocalDateTime
 
+import diode.react.ModelProxy
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import japgolly.scalajs.react._
@@ -16,6 +18,7 @@ import scalajsApp.config.Config
 import io.circe.parser.decode
 import io.circe.generic.auto._
 import io.circe.syntax._
+import scalajsApp.diode.AppState
 
 import scala.concurrent.Future
 import scala.scalajs.js
@@ -26,7 +29,7 @@ object ExpenditurePanel {
 
   case class State (foodExp : Int,transportExp : Int, utilityExp: Int)
   case class Props(
-                    //proxy: ModelProxy[AppState],
+                    proxy: ModelProxy[AppState],
                     ctl: RouterCtl[AppRouter.Page]
                   )
 
@@ -109,13 +112,13 @@ object ExpenditurePanel {
             Typography(align = Typography.Align.Center,color = Typography.Color.Primary,variant = Typography.Variant.H3)(date),
           <.br(),
           <.br(),
-          ExpenseField(ExpenseField.Props("Food Amount",state.foodExp)),
+          ExpenseField(ExpenseField.Props(props.proxy, "Food Amount",state.foodExp)),
           <.br(),
           <.br(),
-          ExpenseField(ExpenseField.Props("Transport Amount",state.transportExp)),
+          ExpenseField(ExpenseField.Props(props.proxy, "Transport Amount",state.transportExp)),
           <.br(),
           <.br(),
-          ExpenseField(ExpenseField.Props("Utility Amount",state.utilityExp)),
+          ExpenseField(ExpenseField.Props(props.proxy, "Utility Amount",state.utilityExp)),
         <.br(),
           <.br(),
           Button(variant =  Button.Variant.Contained,color = Button.Color.Primary,onClick = onSave _)(VdomNode("Save"))
