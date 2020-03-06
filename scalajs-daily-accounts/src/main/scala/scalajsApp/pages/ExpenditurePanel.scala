@@ -74,7 +74,8 @@ object ExpenditurePanel {
           data = ExpenseRequest(
             Expense(
               dayId,
-              $.state.map(s=> s.foodExp.toString).runNow(),
+              $.props.map(p => p.proxy.zoom(_.foodExpense)).runNow()().toString,
+              //$.state.map(s=> s.foodExp.toString).runNow(),
               $.state.map(s=> s.transportExp.toString).runNow(),
               $.state.map(s=> s.utilityExp.toString).runNow()
             )
@@ -112,13 +113,13 @@ object ExpenditurePanel {
             Typography(align = Typography.Align.Center,color = Typography.Color.Primary,variant = Typography.Variant.H3)(date),
           <.br(),
           <.br(),
-          ExpenseField(ExpenseField.Props(props.proxy, "Food Amount",state.foodExp)),
+          ExpenseField(ExpenseField.Props(dayId.toInt,"Food Amount", state.foodExp)),
           <.br(),
           <.br(),
-          ExpenseField(ExpenseField.Props(props.proxy, "Transport Amount",state.transportExp)),
+          ExpenseField(ExpenseField.Props(dayId.toInt,"Transport Amount",state.transportExp)),
           <.br(),
           <.br(),
-          ExpenseField(ExpenseField.Props(props.proxy, "Utility Amount",state.utilityExp)),
+          ExpenseField(ExpenseField.Props(dayId.toInt,"Utility Amount",state.utilityExp)),
         <.br(),
           <.br(),
           Button(variant =  Button.Variant.Contained,color = Button.Color.Primary,onClick = onSave _)(VdomNode("Save"))

@@ -18,7 +18,11 @@ case class SetLoadingState() extends Action
 
 case class ClearLoadingState() extends Action
 
-case class AddExpense(date: Int, food: Int, transport: Int, utility :Int) extends Action
+case class AddFoodExpense(date: Int, food: Int) extends Action
+
+case class AddTransportExpense(date: Int, transport: Int) extends Action
+
+case class AddUtilityExpense(date: Int, utility: Int) extends Action
 
 case class RemoveExpense(date : Int) extends Action
 

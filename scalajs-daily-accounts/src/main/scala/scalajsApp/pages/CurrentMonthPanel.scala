@@ -64,7 +64,8 @@ object CurrentMonthPanel {
             justify = Grid.Justify.SpaceAround,
             alignItems = Grid.AlignItems.Center,
             item = true, lg = Grid.Lg._4)(
-            ExpenseField(ExpenseField.Props(props.proxy, "Food Amount",0)),
+            //TODO Chnage value to current date
+            ExpenseField(ExpenseField.Props(0, "Food Amount",0)),
             FormControl(fullWidth = false,variant = FormControl.Variant.Outlined,disabled = true)(
               InputLabel()("Cumulative"),
               OutlinedInput(startAdornment = VdomNode("\u20B9"  + "1000"),labelWidth = 100)
@@ -72,12 +73,15 @@ object CurrentMonthPanel {
           ),
           <.br(),
           <.br(),
-          ExpenseField(ExpenseField.Props(props.proxy, "Transport Amount",0)),
+          //TODO Chnage value to current date
+          ExpenseField(ExpenseField.Props(0, "Transport Amount",0)),
           <.br(),
           <.br(),
-          ExpenseField(ExpenseField.Props(props.proxy, "Utility Amount",0)),
+          //TODO Chnage value to current date
+          ExpenseField(ExpenseField.Props(0, "Utility Amount",0)),
           <.br(),
           <.br(),
+          //TODO Chnage value to current date
           Button(variant =  Button.Variant.Contained,color = Button.Color.Primary)(VdomNode("Save"))
 
 
