@@ -10,63 +10,52 @@ import scala.scalajs.js
 
 object ExpenseField {
 
-  case class State(localExpense: Int)
+  case class State(var localExpense: Int)
 
-  case class Props(date: Int, label: String, defaultExpense: Int)
+  case class Props(label: String,
+                   defaultExpense: Int,
+                   onExpenseValueChange: (Int, String) => CallbackTo[Unit])
 
   class Backend($: BackendScope[Props, State]) {
 
-    def getCurrentDate = {
-      $.props.map(_.date).runNow()
+    def onFocusChange (e: ReactFocusEvent): Callback = {
+      // Important to have runNow in the end as 'onExpenseValueChange' returns callback
+      $.props.map(p => p.onExpenseValueChange($.state.map(s => s.localExpense).runNow(),p.label)).runNow()
     }
 
-    def getCurrentLabel = {
-      $.props.map(_.label).runNow()
-    }
-
-    def updateDiodeState(value: Int) = {
-      Callback(
-        getCurrentLabel match {
-        case "Food Amount" => AppCircuit.dispatch(AddFoodExpense(date = getCurrentDate, food = value.toInt))
-      }).runNow()
-    }
-
-    def onValueChange(e: ReactEventFromInput) = {
-      e.preventDefaultCB
+    def onValueChange(e: ReactEventFromInput): CallbackTo[Unit] = {
       val newValue = e.target.value
-      //val date = $.props.map(_.date)
-      //Callback.log ($.props.map(_.label).runNow()) >>
-      //Callback.log ($.state.map(_.localExpense).runNow())
-      $.modState(s => {
-
-             s.copy(if (newValue != "") newValue.toInt else 0)
-        AppCircuit.dispatch(AddFoodExpense(date = 111, food = 0))
-        s
-      }
-        )
-
-
-
-
-      //$.modState(s => s.copy(e.target.value.toInt))
+      $.modState((s,p) => {
+        if (newValue != "") {
+          s.copy(localExpense = newValue.toInt)
+        }
+        else {
+          s.copy(localExpense = 0)
+        }
+      })
     }
 
-    def mounted : Callback = {
+    def mounted: Callback = {
       Callback.log("Mounted ExpenseField")
     }
 
     def recieveProps: Callback = {
       Callback.log("Receive Props Update to ExpenseField")
-      $.modState((s,p) => s.copy(p.defaultExpense))
-
+      $.modState((s, p) => s.copy(p.defaultExpense))
     }
 
     def render(props: Props, state: State): VdomElement = {
       FormControl(fullWidth = false, variant = FormControl.Variant.Outlined)(
         InputLabel()(props.label),
-        OutlinedInput(startAdornment = VdomNode("\u20B9"),`type` = "number",
-          value = js.Any.fromInt(state.localExpense), readOnly = false,
-          labelWidth = 100, onChange = onValueChange _)
+        OutlinedInput(
+          startAdornment = VdomNode("\u20B9"),
+          `type` = "number",
+          value = js.Any.fromInt(state.localExpense),
+          readOnly = false,
+          labelWidth = 100,
+          onChange = onValueChange _,
+          onBlur = onFocusChange _
+          )
       )
     }
   }

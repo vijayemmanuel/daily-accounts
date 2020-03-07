@@ -7,7 +7,7 @@ import japgolly.scalajs.react.extra.router.RouterCtl
 import org.rebeam.mui.Grid.Lg
 import org.rebeam.mui.{Button, Card, DatePicker, FormControl, Grid, InputLabel, MenuItem, NativeSelect, OutlinedInput, Select, TextField, Typography}
 import scalajsApp.components.ExpenseField
-import scalajsApp.diode.AppState
+import scalajsApp.diode.{AddFoodExpense, AddTransportExpense, AddUtilityExpense, AppCircuit, AppState}
 import scalajsApp.router.AppRouter
 
 import scala.scalajs.js
@@ -34,6 +34,41 @@ object CurrentMonthPanel {
     }*/
 
     val days = List("Sun","Mon","Tues","Wed","Thurs","Fri","Sat");
+
+    val date = new js.Date().toDateString()
+
+    val day = new js.Date().getDate()
+    val month = new js.Date().getMonth() + 1 // Note the JS month starts from 0
+    val year = new js.Date().getFullYear()
+
+    val dayId = year.toString +
+      (if (month.toString.length == 1) "0" + month.toString else month.toString) +
+      (if (day.toString.length == 1) "0" + day.toString else day.toString)
+
+    def onExpenseValueChange(value: Int, label: String) =
+      CallbackTo {
+        label match {
+          case "Food Amount" => {
+            // Dispatch to diode
+            AppCircuit.dispatch(AddFoodExpense(date = dayId.toInt, food = value))
+            // Update the local state so as to propagate to props in children
+            //$.modState(s => s.copy(foodExp = value)).runNow()
+          }
+          case "Transport Amount" => {
+            // Dispatch to diode
+            AppCircuit.dispatch(AddTransportExpense(date = dayId.toInt, transport = value))
+            // Update the local state so as to propagate to props in children
+            //$.modState(s => s.copy(transportExp = value)).runNow()
+          }
+          case "Utility Amount" => {
+            // Dispatch to diode
+            AppCircuit.dispatch(AddUtilityExpense(date = dayId.toInt, utility = value))
+            // Update the local state so as to propagate to props in children
+            //$.modState(s => s.copy(utilityExp = value)).runNow()
+          }
+
+        }
+      }
 
     def mounted: Callback = Callback.log("Mounted Current Month!")
 
@@ -65,7 +100,7 @@ object CurrentMonthPanel {
             alignItems = Grid.AlignItems.Center,
             item = true, lg = Grid.Lg._4)(
             //TODO Chnage value to current date
-            ExpenseField(ExpenseField.Props(0, "Food Amount",0)),
+            ExpenseField(ExpenseField.Props("Food Amount",0,onExpenseValueChange)),
             FormControl(fullWidth = false,variant = FormControl.Variant.Outlined,disabled = true)(
               InputLabel()("Cumulative"),
               OutlinedInput(startAdornment = VdomNode("\u20B9"  + "1000"),labelWidth = 100)
@@ -74,11 +109,11 @@ object CurrentMonthPanel {
           <.br(),
           <.br(),
           //TODO Chnage value to current date
-          ExpenseField(ExpenseField.Props(0, "Transport Amount",0)),
+          ExpenseField(ExpenseField.Props("Transport Amount",0,onExpenseValueChange)),
           <.br(),
           <.br(),
           //TODO Chnage value to current date
-          ExpenseField(ExpenseField.Props(0, "Utility Amount",0)),
+          ExpenseField(ExpenseField.Props("Utility Amount",0,onExpenseValueChange)),
           <.br(),
           <.br(),
           //TODO Chnage value to current date
