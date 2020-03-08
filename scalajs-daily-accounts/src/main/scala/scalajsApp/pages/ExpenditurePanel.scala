@@ -9,7 +9,7 @@ import scala.concurrent.Future
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.vdom.html_<^._
 import japgolly.scalajs.react.extra.router.RouterCtl
-import org.rebeam.mui.{Button, FormControl, Grid, InputLabel, OutlinedInput, TextField, Typography}
+import org.rebeam.mui.{Button, FormControl, Grid, InputLabel, OutlinedInput, Snackbar, SnackbarContent, TextField, Typography}
 import org.scalajs.dom
 import scalajsApp.components.ExpenseField
 import scalajsApp.models.{Expense, ExpenseRequest, ExpenseResponse}
@@ -19,21 +19,35 @@ import io.circe.parser.decode
 import io.circe.generic.auto._
 import io.circe.syntax._
 import scalajsApp.diode.{AddFoodExpense, AddTransportExpense, AddUtilityExpense, AppCircuit, AppState}
+import scalajsApp.pages.ExpenditurePanel.NotifType.NotifType
 
 import scala.concurrent.Future
 import scala.scalajs.js
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 
 object ExpenditurePanel {
 
-  case class State (foodExp : Int,transportExp : Int, utilityExp: Int)
+  object NotifType extends Enumeration {
+    type NotifType = Value
+    val Success, Error, Severe = Value
+    }
+
+  case class State (var foodExp : Int,
+                    var transportExp : Int,
+                    var utilityExp: Int,
+                    var saveNotifStatus: Boolean,
+                    var saveNotifType: NotifType
+
+                   )
   case class Props(
                     proxy: ModelProxy[AppState],
                     ctl: RouterCtl[AppRouter.Page]
                   )
 
   class Backend($: BackendScope[Props, State]) {
+
+
 
     val host = Config.AppConfig.apiHost
     val date = new js.Date().toDateString()
@@ -74,9 +88,9 @@ object ExpenditurePanel {
           data = ExpenseRequest(
             Expense(
               dayId,
-              $.props.map(p => p.proxy.zoom(_.foodExpense)).runNow()().toString,
-              $.props.map(p => p.proxy.zoom(_.transportExpense)).runNow()().toString,
-              $.props.map(p => p.proxy.zoom(_.utilityExpense)).runNow()().toString,
+              $.state.map(s => s.foodExp).runNow().toString,
+              $.state.map(s => s.transportExp).runNow().toString,
+              $.state.map(s => s.utilityExp).runNow().toString,
             )
           ).asJson.toString).map(xhr => {
           val option = decode[ExpenseResponse](xhr.responseText)
@@ -85,14 +99,26 @@ object ExpenditurePanel {
             case Right(data) => data
           }
         })
-
       }
 
-      Callback(saveData().map { value =>
-        $.modState(s => s.copy(foodExp = Try(value.message.Food.toInt).toOption.getOrElse(-1),
-          transportExp = Try(value.message.Transport.toInt).toOption.getOrElse(-1),
-          utilityExp = Try(value.message.Utility.toInt).toOption.getOrElse(-1)))
-      })
+      Callback.future(saveData().map( value =>  value match {
+          // Handle possible network issues.
+        case ExpenseResponse(Expense("-2", "-2", "-2", "-2")) =>
+          $.modState (s => s.copy (saveNotifStatus = true, saveNotifType = NotifType.Error))
+
+        case _ =>
+          // Return -1 if there was wrong data (non Int) stored in database.
+        $.modState (s => s.copy (foodExp = Try (value.message.Food.toInt).toOption.getOrElse (- 1),
+        transportExp = Try (value.message.Transport.toInt).toOption.getOrElse (- 1),
+        utilityExp = Try (value.message.Utility.toInt).toOption.getOrElse (- 1),
+          saveNotifStatus = true, saveNotifType = NotifType.Success) )
+      }) // Recover with error if exception is re thrown.
+        .recover { case e: Exception =>  Callback.log(s"ERROR $e")  >>
+          $.modState (s => s.copy (saveNotifStatus = true, saveNotifType = NotifType.Severe))})
+    }
+
+    def onNotifClose  = {
+      $.modState(s=> s.copy(saveNotifStatus = false))
     }
 
     def onExpenseValueChange(value: Int, label: String) =
@@ -127,6 +153,12 @@ object ExpenditurePanel {
     }
 
     def render(props: Props, state: State): VdomElement = {
+      val notification = state.saveNotifType match {
+        case NotifType.Success => VdomNode("Saved Expenses")
+        case NotifType.Error => VdomNode("Unable to Save Expenses. Check API")
+        case _ => VdomNode("Unable to Save Expenses. Serious Issue !")
+      }
+
       <.div (
         Grid(container = true, direction = Grid.Direction.Column,
         justify = Grid.Justify.Center, alignItems = Grid.AlignItems.Center)(
@@ -134,25 +166,28 @@ object ExpenditurePanel {
             Typography(align = Typography.Align.Center,color = Typography.Color.Primary,variant = Typography.Variant.H3)(date),
           <.br(),
           <.br(),
-          ExpenseField(ExpenseField.Props("Food Amount", state.foodExp,onExpenseValueChange)),
+          ExpenseField(ExpenseField.Props("Food Amount", state.foodExp,onExpenseValueChange, false)),
           <.br(),
           <.br(),
-          ExpenseField(ExpenseField.Props("Transport Amount",state.transportExp,onExpenseValueChange)),
+          ExpenseField(ExpenseField.Props("Transport Amount",state.transportExp,onExpenseValueChange, false)),
           <.br(),
           <.br(),
-          ExpenseField(ExpenseField.Props("Utility Amount",state.utilityExp,onExpenseValueChange)),
+          ExpenseField(ExpenseField.Props("Utility Amount",state.utilityExp,onExpenseValueChange, false)),
         <.br(),
           <.br(),
-          Button(variant =  Button.Variant.Contained,color = Button.Color.Primary,onClick = onSave _)(VdomNode("Save"))
-
+          Button(variant =  Button.Variant.Contained,color = Button.Color.Primary,onClick = onSave _)(VdomNode("Save")),
+          Snackbar(open = state.saveNotifStatus,
+            autoHideDuration = 3000,
+            message  = notification,
+            onClose = onNotifClose
+          )()
         )
       )
-
     }
   }
 
   val Component = ScalaComponent.builder[Props]("ExpenditurePage")
-    .initialState(State(0,0,0))
+    .initialState(State(0,0,0,false,NotifType.Error))
     .renderBackend[Backend]
     .componentDidMount(scope => scope.backend.mounted)
     .build

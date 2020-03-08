@@ -10,11 +10,16 @@ import scala.scalajs.js
 
 object ExpenseField {
 
-  case class State(var localExpense: Int)
+  case class State(
+                    var localExpense: Int // state to manage local changes to expense
+                  )
 
-  case class Props(label: String,
-                   defaultExpense: Int,
-                   onExpenseValueChange: (Int, String) => CallbackTo[Unit])
+  case class Props(
+                    label: String, // Expense field
+                    defaultExpense: Int,  // default expense value for the expense field
+                    onExpenseValueChange: (Int, String) => CallbackTo[Unit], // callback to handle local expense changes
+                    disabled : Boolean
+                  )
 
   class Backend($: BackendScope[Props, State]) {
 
@@ -45,7 +50,7 @@ object ExpenseField {
     }
 
     def render(props: Props, state: State): VdomElement = {
-      FormControl(fullWidth = false, variant = FormControl.Variant.Outlined)(
+      FormControl(fullWidth = false, variant = FormControl.Variant.Outlined, disabled = props.disabled)(
         InputLabel()(props.label),
         OutlinedInput(
           startAdornment = VdomNode("\u20B9"),

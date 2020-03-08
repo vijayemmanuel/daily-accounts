@@ -22,20 +22,7 @@ object CurrentMonthPanel {
 
   class Backend($: BackendScope[Props, Unit]) {
 
-    /*def getCities(props: Props) = {
-      val proxy = props.proxy()
-      proxy.favCitiesWeather.map {city =>
-        <.div(
-          ^.key := city.id,
-          ^.marginBottom := 10.px,
-          WeatherBox(WeatherBox.Props(Some(city), props.ctl, proxy.userInfo, isRemoveBtn = true))
-        )
-      }
-    }*/
-
-    val days = List("Sun","Mon","Tues","Wed","Thurs","Fri","Sat");
-
-    val date = new js.Date().toDateString()
+    val days = List("Sat","Sun","Mon","Tues","Wed","Thurs","Fri");
 
     val day = new js.Date().getDate()
     val month = new js.Date().getMonth() + 1 // Note the JS month starts from 0
@@ -73,12 +60,6 @@ object CurrentMonthPanel {
     def mounted: Callback = Callback.log("Mounted Current Month!")
 
     def render(props: Props): VdomElement = {
-
-      val year =  new js.Date().getFullYear()
-      val day = new js.Date().getDate()
-      val dayOfWeek = days(new js.Date().getDay())
-      val month = new js.Date().getMonth()
-
       <.div (
         Grid(container = true, direction = Grid.Direction.Column,
           justify = Grid.Justify.Center,
@@ -90,7 +71,7 @@ object CurrentMonthPanel {
             alignItems = Grid.AlignItems.Center)(
               Typography(align = Typography.Align.Center,color = Typography.Color.Primary,variant = Typography.Variant.H6)("Select Day : "),
               NativeSelect() (
-                (1 until day+1).map (d => <.option (^.key := d, ^.value  := d,d) ).toVdomArray
+                (1 until day+1).reverse.map (d => <.option (^.key := d, ^.value  := d,d + " - " + days(d%7))).toVdomArray
               )
             ),
           <.br(),
@@ -100,20 +81,31 @@ object CurrentMonthPanel {
             alignItems = Grid.AlignItems.Center,
             item = true, lg = Grid.Lg._4)(
             //TODO Chnage value to current date
-            ExpenseField(ExpenseField.Props("Food Amount",0,onExpenseValueChange)),
-            FormControl(fullWidth = false,variant = FormControl.Variant.Outlined,disabled = true)(
-              InputLabel()("Cumulative"),
-              OutlinedInput(startAdornment = VdomNode("\u20B9"  + "1000"),labelWidth = 100)
-            ),
+            ExpenseField(ExpenseField.Props("Food Amount",0,onExpenseValueChange, false)),
+            ExpenseField(ExpenseField.Props("Cumulative",1000,onExpenseValueChange, true)),
           ),
           <.br(),
           <.br(),
+          Grid(container = true, direction = Grid.Direction.Row,
+            justify = Grid.Justify.SpaceAround,
+            alignItems = Grid.AlignItems.Center,
+            item = true, lg = Grid.Lg._4)(
           //TODO Chnage value to current date
-          ExpenseField(ExpenseField.Props("Transport Amount",0,onExpenseValueChange)),
+          ExpenseField(ExpenseField.Props("Transport Amount",0,onExpenseValueChange, false)),
+          ExpenseField(ExpenseField.Props("Cumulative",1000,onExpenseValueChange, true)),
+          ),
           <.br(),
           <.br(),
+          Grid(container = true, direction = Grid.Direction.Row,
+            justify = Grid.Justify.SpaceAround,
+            alignItems = Grid.AlignItems.Center,
+            item = true, lg = Grid.Lg._4)(
           //TODO Chnage value to current date
-          ExpenseField(ExpenseField.Props("Utility Amount",0,onExpenseValueChange)),
+          ExpenseField(ExpenseField.Props("Utility Amount",0,onExpenseValueChange, false)),
+          ExpenseField(ExpenseField.Props("Cumulative",1000,onExpenseValueChange, true)),
+          <.br(),
+          <.br(),
+          ),
           <.br(),
           <.br(),
           //TODO Chnage value to current date
