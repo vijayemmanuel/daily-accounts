@@ -22,12 +22,12 @@ class DynamoService {
 
   val logger: Logger = LogManager.getLogger(getClass)
 
-  val awsCreds = new BasicAWSCredentials("AKIA5LM47NQEVNIDT27T","ty7aQ0P0M3HQ1wmw71UHR3ZuOVRCjLsrGK3pukac")
+  val awsCreds = new BasicAWSCredentials("XXXXXXX","XXXXXXXXX)
 
   val client = AmazonDynamoDBClient
     .builder()
-    .withRegion(Regions.AP_SOUTH_1)
-    .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+    //.withRegion(Regions.AP_SOUTH_1)
+    //.withCredentials(new AWSStaticCredentialsProvider(awsCreds))
     .build()
 
   val table = Table[DailyExpenses]("DailyExpenses2")
