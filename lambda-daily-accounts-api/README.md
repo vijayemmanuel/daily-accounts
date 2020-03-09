@@ -25,12 +25,13 @@ Update the severless.yml file
 ```
 functions:
     app:
-     handler: app.ApiGatewayScalaHandler::handle
+     handler: app.GetExpenseScalaHandler::handle
    events:
       - http:
-          path: "lambda-event-app-api"
-          method: post
-          async: true
+          path: "expense"
+          method: get
+          async: false
+          async: false
 ```
 
 #Deploy the project 
