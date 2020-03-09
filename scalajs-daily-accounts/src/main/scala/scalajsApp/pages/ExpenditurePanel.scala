@@ -63,22 +63,22 @@ object ExpenditurePanel {
 
     def updateState = {
 
-      def getData(): Future[ExpenseResponse] = {
+      def getData(): Future[Expense] = {
         println(s"Requesting expenses for $dayId")
         // Note that we have added additional header to enable CORS policy in the request
         dom.ext.Ajax.get(url = s"$host/dev/expense?date=$dayId").map(xhr => {
           val option = decode[ExpenseResponse](xhr.responseText)
           option match {
-            case Left(failure) => ExpenseResponse(Expense("-2", "-2", "-2", "-2"))
-            case Right(data) => data
+            case Left(failure) => Expense("-2", "-2", "-2", "-2")
+            case Right(data) => data.message.head
           }
         })
       }
 
       getData().map { value =>
-        $.modState(s => s.copy(foodExp = Try(value.message.Food.toInt).toOption.getOrElse(-1),
-          transportExp = Try(value.message.Transport.toInt).toOption.getOrElse(-1),
-          utilityExp = Try(value.message.Utility.toInt).toOption.getOrElse(-1))).runNow()
+        $.modState(s => s.copy(foodExp = Try(value.Food.toInt).toOption.getOrElse(-1),
+          transportExp = Try(value.Transport.toInt).toOption.getOrElse(-1),
+          utilityExp = Try(value.Utility.toInt).toOption.getOrElse(-1))).runNow()
       }
     }
 
@@ -95,22 +95,22 @@ object ExpenditurePanel {
           ).asJson.toString).map(xhr => {
           val option = decode[ExpenseResponse](xhr.responseText)
           option match {
-            case Left(failure) => ExpenseResponse(Expense("-2", "-2", "-2", "-2"))
-            case Right(data) => data
+            case Left(failure) => Expense("-2", "-2", "-2", "-2")
+            case Right(data) => data.message.head
           }
         })
       }
 
       Callback.future(saveData().map( value =>  value match {
           // Handle possible network issues.
-        case ExpenseResponse(Expense("-2", "-2", "-2", "-2")) =>
+        case Expense("-2", "-2", "-2", "-2") =>
           $.modState (s => s.copy (saveNotifStatus = true, saveNotifType = NotifType.Error))
 
         case _ =>
           // Return -1 if there was wrong data (non Int) stored in database.
-        $.modState (s => s.copy (foodExp = Try (value.message.Food.toInt).toOption.getOrElse (- 1),
-        transportExp = Try (value.message.Transport.toInt).toOption.getOrElse (- 1),
-        utilityExp = Try (value.message.Utility.toInt).toOption.getOrElse (- 1),
+        $.modState (s => s.copy (foodExp = Try (value.Food.toInt).toOption.getOrElse (- 1),
+        transportExp = Try (value.Transport.toInt).toOption.getOrElse (- 1),
+        utilityExp = Try (value.Utility.toInt).toOption.getOrElse (- 1),
           saveNotifStatus = true, saveNotifType = NotifType.Success) )
       }) // Recover with error if exception is re thrown.
         .recover { case e: Exception =>  Callback.log(s"ERROR $e")  >>

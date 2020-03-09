@@ -80,8 +80,8 @@ object CurrentMonthPanel {
             justify = Grid.Justify.SpaceAround,
             alignItems = Grid.AlignItems.Center,
             item = true, lg = Grid.Lg._4)(
-            //TODO Chnage value to current date
-            ExpenseField(ExpenseField.Props("Food Amount",0,onExpenseValueChange, false)),
+
+            ExpenseField(ExpenseField.Props("Food Amount",props.proxy.zoom(_.foodExpense).value,onExpenseValueChange, false)),
             ExpenseField(ExpenseField.Props("Cumulative",1000,onExpenseValueChange, true)),
           ),
           <.br(),
@@ -90,8 +90,7 @@ object CurrentMonthPanel {
             justify = Grid.Justify.SpaceAround,
             alignItems = Grid.AlignItems.Center,
             item = true, lg = Grid.Lg._4)(
-          //TODO Chnage value to current date
-          ExpenseField(ExpenseField.Props("Transport Amount",0,onExpenseValueChange, false)),
+          ExpenseField(ExpenseField.Props("Transport Amount",props.proxy.zoom(_.transportExpense).value,onExpenseValueChange, false)),
           ExpenseField(ExpenseField.Props("Cumulative",1000,onExpenseValueChange, true)),
           ),
           <.br(),
@@ -100,15 +99,11 @@ object CurrentMonthPanel {
             justify = Grid.Justify.SpaceAround,
             alignItems = Grid.AlignItems.Center,
             item = true, lg = Grid.Lg._4)(
-          //TODO Chnage value to current date
-          ExpenseField(ExpenseField.Props("Utility Amount",0,onExpenseValueChange, false)),
+          ExpenseField(ExpenseField.Props("Utility Amount",props.proxy.zoom(_.utilityExpense).value,onExpenseValueChange, false)),
           ExpenseField(ExpenseField.Props("Cumulative",1000,onExpenseValueChange, true)),
-          <.br(),
-          <.br(),
           ),
           <.br(),
           <.br(),
-          //TODO Chnage value to current date
           Button(variant =  Button.Variant.Contained,color = Button.Color.Primary)(VdomNode("Save"))
 
 

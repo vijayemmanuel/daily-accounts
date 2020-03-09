@@ -9,7 +9,7 @@ case class Expense(
                   )
 
 case class ExpenseResponse (
-                             message: Expense
+                             message: List[Expense]
                            )
 
 case class ExpenseRequest (
