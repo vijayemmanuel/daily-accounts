@@ -39,7 +39,7 @@ class GetExpenseScalaHandler extends Proxy[Req, Resp] {
     val queryResult  = service.getExpense(input.queryStringParameters.get("date")).map (exp =>
     exp match {
       case Right(v:DailyExpenses) => Expense(
-        v.YearMonth.toString() +  (if (v.Day / 10 > 1) v.Day.toString else "0"+ v.Day.toString),
+        v.YearMonth.toString() +  (if (v.Day / 10 >= 1) v.Day.toString else "0"+ v.Day.toString),
         v.Food.toString(),
         v.Transport.toString(),
         v.Utility.toString())
@@ -71,7 +71,7 @@ class PutExpenseScalaHandler extends Proxy[Req, Resp] {
     val date = service.putExpense(input.body.get.in).head
     val queryResult : List[Expense] = date match {
       case Right(v:DailyExpenses) => List(Expense(
-        v.YearMonth.toString() +  (if (v.Day / 10 > 1) v.Day.toString else "0"+ v.Day.toString),
+        v.YearMonth.toString() +  (if (v.Day / 10 >= 1) v.Day.toString else "0"+ v.Day.toString),
         v.Food.toString(),
         v.Transport.toString(),
         v.Utility.toString()))

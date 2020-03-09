@@ -11,15 +11,15 @@ import japgolly.scalajs.react.vdom.html_<^._
 import japgolly.scalajs.react.extra.router.RouterCtl
 import org.rebeam.mui.{Button, FormControl, Grid, InputLabel, OutlinedInput, Snackbar, SnackbarContent, TextField, Typography}
 import org.scalajs.dom
-import scalajsApp.components.ExpenseField
-import scalajsApp.models.{Expense, ExpenseRequest, ExpenseResponse}
+import scalajsApp.components.{ExpenseField, ExpenseSnackBar}
+import scalajsApp.models.{Expense, ExpenseRequest, ExpenseResponse, NotifType}
 import scalajsApp.router.AppRouter
 import scalajsApp.config.Config
 import io.circe.parser.decode
 import io.circe.generic.auto._
 import io.circe.syntax._
 import scalajsApp.diode.{AddFoodExpense, AddTransportExpense, AddUtilityExpense, AppCircuit, AppState}
-import scalajsApp.pages.ExpenditurePanel.NotifType.NotifType
+import scalajsApp.models.NotifType.NotifType
 
 import scala.concurrent.Future
 import scala.scalajs.js
@@ -28,17 +28,11 @@ import scala.util.{Failure, Success, Try}
 
 object ExpenditurePanel {
 
-  object NotifType extends Enumeration {
-    type NotifType = Value
-    val Success, Error, Severe = Value
-    }
-
   case class State (var foodExp : Int,
                     var transportExp : Int,
                     var utilityExp: Int,
                     var saveNotifStatus: Boolean,
                     var saveNotifType: NotifType
-
                    )
   case class Props(
                     proxy: ModelProxy[AppState],
@@ -46,8 +40,6 @@ object ExpenditurePanel {
                   )
 
   class Backend($: BackendScope[Props, State]) {
-
-
 
     val host = Config.AppConfig.apiHost
     val date = new js.Date().toDateString()
@@ -153,11 +145,6 @@ object ExpenditurePanel {
     }
 
     def render(props: Props, state: State): VdomElement = {
-      val notification = state.saveNotifType match {
-        case NotifType.Success => VdomNode("Saved Expenses")
-        case NotifType.Error => VdomNode("Unable to Save Expenses. Check API")
-        case _ => VdomNode("Unable to Save Expenses. Serious Issue !")
-      }
 
       <.div (
         Grid(container = true, direction = Grid.Direction.Column,
@@ -176,11 +163,7 @@ object ExpenditurePanel {
         <.br(),
           <.br(),
           Button(variant =  Button.Variant.Contained,color = Button.Color.Primary,onClick = onSave _)(VdomNode("Save")),
-          Snackbar(open = state.saveNotifStatus,
-            autoHideDuration = 3000,
-            message  = notification,
-            onClose = onNotifClose
-          )()
+          ExpenseSnackBar(ExpenseSnackBar.Props(state.saveNotifStatus, state.saveNotifType))
         )
       )
     }

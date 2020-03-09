@@ -45,7 +45,7 @@ object ExpenseField {
     }
 
     def recieveProps: Callback = {
-      Callback.log("Receive Props Update to ExpenseField")
+      Callback.log("Receive Props Update to ExpenseField with value "+ $.props.map(p=> p.defaultExpense).runNow()) >>
       $.modState((s, p) => s.copy(p.defaultExpense))
     }
 
@@ -53,7 +53,7 @@ object ExpenseField {
       FormControl(fullWidth = false, variant = FormControl.Variant.Outlined, disabled = props.disabled)(
         InputLabel()(props.label),
         OutlinedInput(
-          startAdornment = VdomNode("\u20B9"),
+          startAdornment = VdomNode("\u20B9"+ " "),
           `type` = "number",
           value = js.Any.fromInt(state.localExpense),
           readOnly = false,

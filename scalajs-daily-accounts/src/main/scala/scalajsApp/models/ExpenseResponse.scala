@@ -15,3 +15,8 @@ case class ExpenseResponse (
 case class ExpenseRequest (
                             in: Expense
                           )
+
+object NotifType extends Enumeration {
+  type NotifType = Value
+  val Success, Error, Severe = Value
+}
