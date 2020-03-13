@@ -31,7 +31,7 @@ object ExpenseField {
     def onValueChange(e: ReactEventFromInput): CallbackTo[Unit] = {
       val newValue = e.target.value
       $.modState((s,p) => {
-        if (newValue != "") {
+        if (newValue.toInt >= 0) {
           s.copy(localExpense = newValue.toInt)
         }
         else {
@@ -59,7 +59,8 @@ object ExpenseField {
           readOnly = false,
           labelWidth = 100,
           onChange = onValueChange _,
-          onBlur = onFocusChange _
+          onBlur = onFocusChange _,
+
           )
       )
     }

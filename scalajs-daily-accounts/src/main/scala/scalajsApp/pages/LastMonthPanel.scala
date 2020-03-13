@@ -117,7 +117,7 @@ object LastMonthPanel {
             justify = Grid.Justify.SpaceAround,
             alignItems = Grid.AlignItems.Center,
             item = true, lg = Grid.Lg._4)(
-            ExpenseField(ExpenseField.Props("Food Expense",state.foodSum,( _:Int,  _:String) => Callback.empty, false))
+            ExpenseField(ExpenseField.Props("Food Expense",state.foodSum,( _:Int,  _:String) => Callback.empty, true))
           ),
           <.br(),
           <.br(),
@@ -125,7 +125,7 @@ object LastMonthPanel {
             justify = Grid.Justify.SpaceAround,
             alignItems = Grid.AlignItems.Center,
             item = true, lg = Grid.Lg._4)(
-            ExpenseField(ExpenseField.Props("Transport Expense",state.transportSum,( _:Int,  _:String) => Callback.empty, false))
+            ExpenseField(ExpenseField.Props("Transport Expense",state.transportSum,( _:Int,  _:String) => Callback.empty, true))
           ),
           <.br(),
           <.br(),
@@ -133,7 +133,7 @@ object LastMonthPanel {
             justify = Grid.Justify.SpaceAround,
             alignItems = Grid.AlignItems.Center,
             item = true, lg = Grid.Lg._4)(
-            ExpenseField(ExpenseField.Props("Utility Expense",state.utilitySum,( _:Int,  _:String) => Callback.empty,false))
+            ExpenseField(ExpenseField.Props("Utility Expense",state.utilitySum,( _:Int,  _:String) => Callback.empty,true))
           )
         )
 
