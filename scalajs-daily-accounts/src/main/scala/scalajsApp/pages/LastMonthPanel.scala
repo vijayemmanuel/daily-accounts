@@ -12,7 +12,7 @@ import org.rebeam.mui.{Button, Card, DatePicker, FormControl, Grid, InputLabel, 
 import org.scalajs.dom
 import scalajsApp.components.{ExpenseDaySelect, ExpenseField, ExpenseSnackBar}
 import scalajsApp.config.Config
-import scalajsApp.diode.{AddFoodExpense, AddTransportExpense, AddUtilityExpense, AppCircuit, AppState}
+import scalajsApp.diode.{AddFoodExpense, AddTransportExpense, AddUtilityExpense, AppCircuit, AppState, ClearLoadingState, SetLoadingState}
 import scalajsApp.models.{Expense, ExpenseRequest, ExpenseResponse, NotifType}
 import scalajsApp.router.AppRouter
 import io.circe.parser.decode
@@ -51,6 +51,7 @@ object LastMonthPanel {
     else year.toString + (if ((month - 1).toString.length == 1) "0" + (month - 1).toString else (month - 1).toString)
 
     def updateState = {
+      AppCircuit.dispatch(SetLoadingState())
 
       // Launch the API
       def getData(): Future[List[Expense]] = {
@@ -79,6 +80,7 @@ object LastMonthPanel {
             val utilityOnly = value.map(p => p.Utility.toInt)
             var utilitySum = utilityOnly.fold(0)((a: Int, b: Int) => a + b)
 
+            AppCircuit.dispatch(ClearLoadingState())
             $.modState(s => s.copy(foodSum = foodSum, transportSum = transportSum, utilitySum = utilitySum))
           }
         )
@@ -91,7 +93,6 @@ object LastMonthPanel {
     def mounted: Callback = {
       Callback.log("Mounted Current Month!")
       updateState
-
     }
 
 

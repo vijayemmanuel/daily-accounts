@@ -45,7 +45,7 @@ object ExpenseField {
     }
 
     def recieveProps: Callback = {
-      Callback.log("Receive Props Update to ExpenseField with value "+ $.props.map(p=> p.defaultExpense).runNow()) >>
+      //Callback.log("Receive Props Update to ExpenseField with value "+ $.props.map(p=> p.defaultExpense).runNow()) >>
       $.modState((s, p) => s.copy(p.defaultExpense))
     }
 

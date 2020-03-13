@@ -15,6 +15,7 @@ import scalajsApp.pages
 import scalajsApp.pages.{CurrentMonthPanel, ExpenditurePanel}
 import scalajsApp.router.AppRouter
 import scalajsApp.router.AppRouter.Page
+import scalajsApp.diode.AppCircuit.connect
 
 import js.JSConverters._
 import scala.scalajs.js.Dictionary
@@ -32,6 +33,8 @@ object TabModel {
 
 
 object Layout {
+
+  val connection = connect(_.state)
 
   case class Props(
                     proxy: ModelProxy[AppState],
@@ -59,16 +62,19 @@ object Layout {
      Callback.log("Mounted")
     }
 
-    def render(props: Props,state: State): VdomElement = {
+    val theme = Styles.createMuiTheme(theme = js.Dynamic.literal())
 
-      val theme = Styles.createMuiTheme(theme = js.Dynamic.literal(("useNextVariants"->true)))
+    def render(props: Props,state: State): VdomElement = {
 
       <.div(
         <.div(
+
           ^.cls := "container",
           MuiThemeProvider(theme = theme)(
             AppBar(position = AppBar.Position.Static)(
-              Toolbar()(
+              connection(proxy => ExpenseLoadingIndicator(ExpenseLoadingIndicator.Props(proxy))),
+
+                Toolbar()(
                 IconButton(color = IconButton.Color.Inherit)(
                   Menu()
                 ),
@@ -76,6 +82,7 @@ object Layout {
                   "My Account"
                 )
               ),
+
               Tabs(theme = theme,
                 value = Some(js.Any.fromString(state.selectedTabIdx)).orUndefined,
                 centered = true,
@@ -88,6 +95,7 @@ object Layout {
 
             // Render the Component resolved by the Router
             props.r.render()
+
 
           )
         )

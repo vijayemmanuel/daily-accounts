@@ -12,7 +12,7 @@ import org.rebeam.mui.{Button, Card, DatePicker, FormControl, Grid, InputLabel, 
 import org.scalajs.dom
 import scalajsApp.components.{ExpenseDaySelect, ExpenseField, ExpenseSnackBar}
 import scalajsApp.config.Config
-import scalajsApp.diode.{AddFoodExpense, AddTransportExpense, AddUtilityExpense, AppCircuit, AppState}
+import scalajsApp.diode.{AddFoodExpense, AddTransportExpense, AddUtilityExpense, AppCircuit, AppState, ClearLoadingState, SetLoadingState}
 import scalajsApp.models.{Expense, ExpenseRequest, ExpenseResponse, NotifType}
 import scalajsApp.router.AppRouter
 import io.circe.parser.decode
@@ -57,6 +57,7 @@ object CurrentMonthPanel {
 
     def updateState(date : Int) = {
 
+      AppCircuit.dispatch(SetLoadingState())
       // Launch the API
       def getData(): Future[List[Expense]] = {
         println(s"Requesting expenses for $monthId")
@@ -84,11 +85,16 @@ object CurrentMonthPanel {
             val utilityOnly = value.map(p => p.Utility.toInt)
             var utilitySum = utilityOnly.fold(0)((a: Int, b: Int) => a + b)
 
-            val target = value.filter(p => p.Date.toInt == date).head
-            Callback.log("Target  Date " + date + " Values :" + target.Food + " ,"+ target.Transport + " ," + target.Utility) >>
-              Callback.log("State : Target  Date " + $.state.map(s => s.dayId).runNow() + " Values :" + $.state.map(s => s.foodExp).runNow()+ " ,"+ $.state.map(s => s.transportExp).runNow() + " ," + $.state.map(s => s.utilityExp).runNow()) >>
-            $.modState(s => s.copy(foodSum = foodSum, transportSum = transportSum, utilitySum = utilitySum,
-            foodExp = target.Food.toInt, transportExp = target.Transport.toInt, utilityExp = target.Utility.toInt,
+            val target = value.filter(p => p.Date.toInt == date)
+            AppCircuit.dispatch(ClearLoadingState())
+            //Callback.log("Target  Date " + date + " Values :" + target.Food + " ,"+ target.Transport + " ," + target.Utility) >>
+            //  Callback.log("State : Target  Date " + $.state.map(s => s.dayId).runNow() + " Values :" + $.state.map(s => s.foodExp).runNow()+ " ,"+ $.state.map(s => s.transportExp).runNow() + " ," + $.state.map(s => s.utilityExp).runNow()) >>
+            $.modState(s => s.copy(foodSum = foodSum,
+              transportSum = transportSum,
+              utilitySum = utilitySum,
+              foodExp = target.map(t => t.Food.toInt).headOption.getOrElse(0),
+              transportExp = target.map(t => t.Transport.toInt).headOption.getOrElse(0),
+              utilityExp = target.map(t => t.Utility.toInt).headOption.getOrElse(0),
               saveNotifStatus = false))
           }
         )
@@ -131,6 +137,8 @@ object CurrentMonthPanel {
 
     def onSave(e: ReactMouseEvent) = {
 
+      AppCircuit.dispatch(SetLoadingState())
+
       def saveData() = {
         dom.ext.Ajax.put(url = s"$host/dev/expense",
           data = ExpenseRequest(
@@ -153,9 +161,11 @@ object CurrentMonthPanel {
         Callback.future(data.map(value => value match {
           // Handle possible network issues.
           case Expense("-2", "-2", "-2", "-2") =>
+            AppCircuit.dispatch(ClearLoadingState())
             $.modState(s => s.copy(saveNotifStatus = true, saveNotifType = NotifType.Error))
 
           case _ =>
+            AppCircuit.dispatch(ClearLoadingState())
             // Return -1 if there was wrong data (non Int) stored in database.
             $.modState(s => s.copy(
               foodExp = Try(value.Food.toInt).toOption.getOrElse(-1),
@@ -163,7 +173,8 @@ object CurrentMonthPanel {
               utilityExp = Try(value.Utility.toInt).toOption.getOrElse(-1),
               saveNotifStatus = true, saveNotifType = NotifType.Success))
         }) // Recover with error if exception is re thrown.
-          .recover { case e: Exception => Callback.log(s"ERROR $e") >>
+          .recover { case e: Exception => AppCircuit.dispatch(ClearLoadingState())
+            Callback.log(s"ERROR $e") >>
             $.modState(s => s.copy(saveNotifStatus = true, saveNotifType = NotifType.Severe))
           })
 
@@ -193,7 +204,7 @@ object CurrentMonthPanel {
           Grid(container = true, direction = Grid.Direction.Row,
             justify = Grid.Justify.Center,
             alignItems = Grid.AlignItems.Center)(
-              Typography(align = Typography.Align.Center,color = Typography.Color.Primary,variant = Typography.Variant.H6)("Select Day : "),
+              Typography(align = Typography.Align.Center,color = Typography.Color.Primary)("Select Day : "),
               ExpenseDaySelect (ExpenseDaySelect.Props(day,onExpenseDayChange))
             ),
           <.br(),
@@ -226,7 +237,8 @@ object CurrentMonthPanel {
           ),
           <.br(),
           <.br(),
-          Button(variant =  Button.Variant.Contained,color = Button.Color.Primary,onClick = onSave _)(VdomNode("Save")),
+          Button(variant =  Button.Variant.Contained,color = Button.Color.Primary,onClick = onSave _,disabled = props.proxy().isLoading)(
+            VdomNode("Save")),
             ExpenseSnackBar(ExpenseSnackBar.Props(state.saveNotifStatus, state.saveNotifType))
         )
       )

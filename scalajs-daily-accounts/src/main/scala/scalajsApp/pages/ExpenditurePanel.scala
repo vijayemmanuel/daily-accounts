@@ -18,7 +18,7 @@ import scalajsApp.config.Config
 import io.circe.parser.decode
 import io.circe.generic.auto._
 import io.circe.syntax._
-import scalajsApp.diode.{AddFoodExpense, AddTransportExpense, AddUtilityExpense, AppCircuit, AppState}
+import scalajsApp.diode.{AddFoodExpense, AddTransportExpense, AddUtilityExpense, AppCircuit, AppState, ClearLoadingState, SetLoadingState}
 import scalajsApp.models.NotifType.NotifType
 
 import scala.concurrent.Future
@@ -55,19 +55,26 @@ object ExpenditurePanel {
 
     def updateState = {
 
+      AppCircuit.dispatch(SetLoadingState())
+
       def getData(): Future[Expense] = {
         println(s"Requesting expenses for $dayId")
         // Note that we have added additional header to enable CORS policy in the request
         dom.ext.Ajax.get(url = s"$host/dev/expense?date=$dayId").map(xhr => {
           val option = decode[ExpenseResponse](xhr.responseText)
+          AppCircuit.dispatch(ClearLoadingState())
           option match {
-            case Left(failure) => Expense("-2", "-2", "-2", "-2")
+            case Left(failure) => {
+
+              Expense("-2", "-2", "-2", "-2")
+            }
             case Right(data) => data.message.head
           }
         })
       }
 
       getData().map { value =>
+
         $.modState(s => s.copy(foodExp = Try(value.Food.toInt).toOption.getOrElse(-1),
           transportExp = Try(value.Transport.toInt).toOption.getOrElse(-1),
           utilityExp = Try(value.Utility.toInt).toOption.getOrElse(-1))).runNow()
@@ -75,6 +82,8 @@ object ExpenditurePanel {
     }
 
     def onSave(e: ReactMouseEvent) = {
+      AppCircuit.dispatch(SetLoadingState())
+
       def saveData() = {
         dom.ext.Ajax.put(url = s"$host/dev/expense",
           data = ExpenseRequest(
@@ -96,16 +105,19 @@ object ExpenditurePanel {
       Callback.future(saveData().map( value =>  value match {
           // Handle possible network issues.
         case Expense("-2", "-2", "-2", "-2") =>
+          AppCircuit.dispatch(ClearLoadingState())
           $.modState (s => s.copy (saveNotifStatus = true, saveNotifType = NotifType.Error))
 
         case _ =>
+          AppCircuit.dispatch(ClearLoadingState())
           // Return -1 if there was wrong data (non Int) stored in database.
         $.modState (s => s.copy (foodExp = Try (value.Food.toInt).toOption.getOrElse (- 1),
         transportExp = Try (value.Transport.toInt).toOption.getOrElse (- 1),
         utilityExp = Try (value.Utility.toInt).toOption.getOrElse (- 1),
           saveNotifStatus = true, saveNotifType = NotifType.Success) )
       }) // Recover with error if exception is re thrown.
-        .recover { case e: Exception =>  Callback.log(s"ERROR $e")  >>
+        .recover { case e: Exception =>  AppCircuit.dispatch(ClearLoadingState())
+          Callback.log(s"ERROR $e")  >>
           $.modState (s => s.copy (saveNotifStatus = true, saveNotifType = NotifType.Severe))})
     }
 
@@ -150,7 +162,8 @@ object ExpenditurePanel {
         Grid(container = true, direction = Grid.Direction.Column,
         justify = Grid.Justify.Center, alignItems = Grid.AlignItems.Center)(
         <.br(), <.br(),
-            Typography(align = Typography.Align.Center,color = Typography.Color.Primary,variant = Typography.Variant.H3)(date),
+            Typography(align = Typography.Align.Center,color = Typography.Color.Primary,variant = Typography.Variant.H3)(
+              date),
           <.br(),
           <.br(),
           ExpenseField(ExpenseField.Props("Food Amount", state.foodExp,onExpenseValueChange, false)),
@@ -162,7 +175,8 @@ object ExpenditurePanel {
           ExpenseField(ExpenseField.Props("Utility Amount",state.utilityExp,onExpenseValueChange, false)),
         <.br(),
           <.br(),
-          Button(variant =  Button.Variant.Contained,color = Button.Color.Primary,onClick = onSave _)(VdomNode("Save")),
+          Button(variant =  Button.Variant.Contained,color = Button.Color.Primary,onClick = onSave _,disabled = props.proxy().isLoading)(
+            VdomNode("Save")),
           ExpenseSnackBar(ExpenseSnackBar.Props(state.saveNotifStatus, state.saveNotifType))
         )
       )
