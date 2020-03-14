@@ -31,7 +31,6 @@ functions:
           path: "expense"
           method: get
           async: false
-          async: false
 ```
 
 #Deploy the project 
@@ -41,11 +40,7 @@ functions:
 #Running
 
 Example: As API Gateway GET/PUT/POST Async request
-> set Integration Request "Use Lambda Proxy Integration" to false
-
-> set Http Header "X-Amz-Invocation-Type" to 'Event'
-
-> set Request Body passthrough to When no template matches the request Content-Type header  with no templates available.
+> set Integration Request "Use Lambda Proxy Integration" to true and enable CORS
 
 Use the URL provided by AWS in the front end app
 
