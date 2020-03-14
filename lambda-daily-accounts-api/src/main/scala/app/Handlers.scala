@@ -50,7 +50,8 @@ class GetExpenseScalaHandler extends Proxy[Req, Resp] {
     })
     logger.info(queryResult.asInstanceOf[List[Expense]])
     val responseBodyOption = Some(Resp(queryResult.asInstanceOf[List[Expense]]))
-    Right(ProxyResponse(200,None,responseBodyOption))
+    val headers = Map("Access-Control-Allow-Origin" -> "*")
+    Right(ProxyResponse(200,Some(headers),responseBodyOption))
 
   }
 }
@@ -83,7 +84,8 @@ class PutExpenseScalaHandler extends Proxy[Req, Resp] {
     }
 
     val responseBodyOption = input.body.map(req => Resp(queryResult.asInstanceOf[List[Expense]]))
-    Right(ProxyResponse(200,None,responseBodyOption))
+    val headers = Map("Access-Control-Allow-Origin" -> "*")
+    Right(ProxyResponse(200,Some(headers),responseBodyOption))
 
   }
 }
