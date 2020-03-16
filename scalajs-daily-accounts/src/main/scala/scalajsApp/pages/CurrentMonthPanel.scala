@@ -210,28 +210,27 @@ object CurrentMonthPanel {
           <.br(),
           <.br(),
           Grid(container = true, direction = Grid.Direction.Row,
-            justify = Grid.Justify.SpaceAround,
-            alignItems = Grid.AlignItems.Center,
-            item = true, lg = Grid.Lg._4)(
-
+            justify = Grid.Justify.SpaceEvenly,
+            //alignItems = Grid.AlignItems.Center,
+            item = true, lg = Grid.Lg._4, xs = Grid.Xs._12, md = Grid.Md._6, spacing = Grid.Spacing._24,sm = Grid.Sm._8)(
             ExpenseField(ExpenseField.Props("Food Amount",state.foodExp,onExpenseValueChange, false)),
             ExpenseField(ExpenseField.Props("Cumulative",state.foodSum,onExpenseValueChange, true)),
           ),
           <.br(),
           <.br(),
           Grid(container = true, direction = Grid.Direction.Row,
-            justify = Grid.Justify.SpaceAround,
-            alignItems = Grid.AlignItems.Center,
-            item = true, lg = Grid.Lg._4)(
+            justify = Grid.Justify.SpaceEvenly,
+            //alignItems = Grid.AlignItems.Center,
+            item = true, lg = Grid.Lg._4, xs = Grid.Xs._12, md = Grid.Md._6, spacing = Grid.Spacing._24,sm = Grid.Sm._8)(
           ExpenseField(ExpenseField.Props("Transport Amount",state.transportExp,onExpenseValueChange, false)),
           ExpenseField(ExpenseField.Props("Cumulative",state.transportSum,onExpenseValueChange, true)),
           ),
           <.br(),
           <.br(),
           Grid(container = true, direction = Grid.Direction.Row,
-            justify = Grid.Justify.SpaceAround,
-            alignItems = Grid.AlignItems.Center,
-            item = true, lg = Grid.Lg._4)(
+            justify = Grid.Justify.SpaceEvenly,
+            //alignItems = Grid.AlignItems.Center,
+            item = true, lg = Grid.Lg._4, xs = Grid.Xs._12, md = Grid.Md._6, spacing = Grid.Spacing._24,sm = Grid.Sm._8)(
           ExpenseField(ExpenseField.Props("Utility Amount",state.utilityExp,onExpenseValueChange, false)),
           ExpenseField(ExpenseField.Props("Cumulative",state.utilitySum,onExpenseValueChange, true)),
           ),

@@ -7,6 +7,7 @@ import org.rebeam.mui.{FormControl, InputLabel, OutlinedInput}
 import scalajsApp.diode.{AddFoodExpense, AppCircuit, AppState}
 
 import scala.scalajs.js
+import scala.util.Try
 
 object ExpenseField {
 
@@ -29,10 +30,10 @@ object ExpenseField {
     }
 
     def onValueChange(e: ReactEventFromInput): CallbackTo[Unit] = {
-      val newValue = e.target.value
+      val newValue = Try(e.target.value.toInt).toOption.getOrElse(0)
       $.modState((s,p) => {
-        if (newValue.toInt >= 0) {
-          s.copy(localExpense = newValue.toInt)
+        if (newValue >= 0) {
+          s.copy(localExpense = newValue)
         }
         else {
           s.copy(localExpense = 0)
@@ -57,7 +58,7 @@ object ExpenseField {
           `type` = "number",
           value = js.Any.fromInt(state.localExpense),
           readOnly = false,
-          labelWidth = 100,
+          labelWidth = props.label.length * 8,
           onChange = onValueChange _,
           onBlur = onFocusChange _,
 
