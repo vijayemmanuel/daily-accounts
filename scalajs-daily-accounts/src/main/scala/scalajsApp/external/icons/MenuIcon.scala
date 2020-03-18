@@ -4,7 +4,7 @@ import japgolly.scalajs.react._
 import scalajs.js
 import scalajs.js.annotation.JSImport
 
-object Menu {
+object MenuIcon {
 
   @JSImport("@material-ui/icons", "Menu")
   @js.native

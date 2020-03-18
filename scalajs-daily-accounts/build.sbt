@@ -37,6 +37,7 @@ npmDependencies in Compile ++= Seq(
   "react-dom" -> "16.8.0",
   "@material-ui/core" -> "3.9.3",
   "@material-ui/styles" -> "3.0.0-alpha.10",
-  "@material-ui/icons" -> "3.0.2"
+  "@material-ui/icons" -> "3.0.2",
   //"material-ui-pickers" -> "2.2.4"
+  "chart.js" -> "2.6.0"
 )

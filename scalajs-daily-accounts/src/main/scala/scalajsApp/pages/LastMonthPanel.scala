@@ -134,6 +134,14 @@ object LastMonthPanel {
             alignItems = Grid.AlignItems.Center,
             item = true, lg = Grid.Lg._4)(
             ExpenseField(ExpenseField.Props("Utility Expense",state.utilitySum,( _:Int,  _:String) => Callback.empty,true))
+          ),
+          <.br(),
+          <.br(),
+          Grid(container = true, direction = Grid.Direction.Row,
+            justify = Grid.Justify.SpaceAround,
+            alignItems = Grid.AlignItems.Center,
+            item = true, lg = Grid.Lg._4)(
+            ExpenseField(ExpenseField.Props("Total Monthly Expense",state.foodSum + state.transportSum + state.utilitySum,( _:Int,  _:String) => Callback.empty,true))
           )
         )
 

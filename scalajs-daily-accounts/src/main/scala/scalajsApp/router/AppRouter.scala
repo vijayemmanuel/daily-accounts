@@ -5,7 +5,7 @@ import japgolly.scalajs.react.extra.router._
 import japgolly.scalajs.react.vdom.html_<^._
 import scalajsApp.components.Layout
 import scalajsApp.diode.AppCircuit
-import scalajsApp.pages.{CurrentMonthPanel, ExpenditurePanel, LastMonthPanel}
+import scalajsApp.pages.{CurrentMonthPanel, ExpenditurePanel, LastMonthPanel, YearlyPanel}
 
 
 object AppRouter {
@@ -13,6 +13,7 @@ object AppRouter {
   case object LastMonthExpenses extends Page
   case object Expenditure extends Page
   case object CurrentMonthExpenses extends Page
+  case object YearlyExpenses extends Page
 
 
   val connection = AppCircuit.connect(m => m.state)
@@ -23,9 +24,14 @@ object AppRouter {
       | staticRoute(root, Expenditure) ~> renderR(renderExpenditurePage)
       | staticRoute("#currentmonth", CurrentMonthExpenses) ~> renderR(renderCurrentMonthPage)
       | staticRoute("#lastmonth", LastMonthExpenses) ~> renderR(renderLastMonthPage)
+      | staticRoute("#yearly", YearlyExpenses) ~> renderR(renderYearlyPage)
     )
       .notFound(redirectToPage(Expenditure)(Redirect.Replace))
       .renderWith(layout)
+  }
+
+  def renderYearlyPage(ctl: RouterCtl[Page]) = {
+    connection(proxy => YearlyPanel(YearlyPanel.Props(proxy, ctl)))
   }
 
   def renderExpenditurePage(ctl: RouterCtl[Page]) = {
