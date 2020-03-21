@@ -22,7 +22,7 @@ class DynamoService {
 
   val logger: Logger = LogManager.getLogger(getClass)
 
-  val awsCreds = new BasicAWSCredentials("XXXXXXX","XXXXXXXXX)
+  val awsCreds = new BasicAWSCredentials("XXXXXX","XXXXXXXXX")
 
   val client = AmazonDynamoDBClient
     .builder()
@@ -49,13 +49,18 @@ class DynamoService {
       } yield (survivors)
       Scanamo(client).exec(ops)
     }
-    else {
+    else if ( date.length == 4 ) {
       val ops = for {
-        survivors <- table.query("YearMonth" -> 0)
+        survivors <- table.scan()
       } yield (survivors)
       Scanamo(client).exec(ops)
     }
-
+    else {
+        val ops = for {
+          survivors <- table.query ("YearMonth" -> 0)
+        } yield (survivors)
+        Scanamo(client).exec(ops)
+      }
 
   }
 

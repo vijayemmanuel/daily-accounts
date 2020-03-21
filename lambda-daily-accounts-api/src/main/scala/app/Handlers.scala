@@ -31,25 +31,37 @@ class GetExpenseScalaHandler extends Proxy[Req, Resp] {
     // Print info from the context object
     logger.info("Function name: " + c.getFunctionName)
     logger.info("Function query parameters: " + input.queryStringParameters)
-    logger.info("Function query to lambda: " + input.queryStringParameters.get("date"))
+    val date  = input.queryStringParameters.get("date")
 
     val service = new DynamoService()
 
     logger.info("Calling Dynamo Service")
-    val queryResult  = service.getExpense(input.queryStringParameters.get("date")).map (exp =>
+    val queryResult  = service.getExpense(date).map (exp =>
     exp match {
-      case Right(v:DailyExpenses) => Expense(
+      case Right(v:DailyExpenses) if (date.length == 6 || date.length == 8) =>
+        //logger.info("Date requested " + date + "Date id " + v.YearMonth.toString())
+        Some(Expense(
         v.YearMonth.toString() +  (if (v.Day / 10 >= 1) v.Day.toString else "0"+ v.Day.toString),
         v.Food.toString(),
         v.Transport.toString(),
-        v.Utility.toString())
+        v.Utility.toString()))
+      case Right(v:DailyExpenses) if (date.length == 4 && v.YearMonth.toString().substring(0, 4) == date) =>
+        //logger.info("Year requested " + date + "Date id " + v.YearMonth.toString())
+        Some(Expense(
+        v.YearMonth.toString() +  (if (v.Day / 10 >= 1) v.Day.toString else "0"+ v.Day.toString),
+        v.Food.toString(),
+        v.Transport.toString(),
+        v.Utility.toString()))
+      case Right(v:DailyExpenses) if (date.length == 4 && v.YearMonth.toString().substring(0, 4) != date) =>
+        //logger.info("Year requested " + date + "Date id " + v.YearMonth.toString())
+        None
       case Left (e:DynamoReadError) => {
-        logger.error(e.toString)
-        Expense(e.toString,"","","")
+        logger.error("Error " + e.toString)
+        None
       }
     })
-    logger.info(queryResult.asInstanceOf[List[Expense]])
-    val responseBodyOption = Some(Resp(queryResult.asInstanceOf[List[Expense]]))
+    logger.info(queryResult.asInstanceOf[List[Option[Expense]]].flatten)
+    val responseBodyOption = Some(Resp(queryResult.asInstanceOf[List[Option[Expense]]].flatten))
     val headers = Map("Access-Control-Allow-Origin" -> "*")
     Right(ProxyResponse(200,Some(headers),responseBodyOption))
 
