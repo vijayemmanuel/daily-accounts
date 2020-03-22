@@ -40,6 +40,8 @@ object YearlyPanel {
     val host = Config.AppConfig.apiHost
     val currentYear = new js.Date().getFullYear()
 
+    val monthNames = List("Jan","Feb","Mar","Apr","May","June","Jul","Aug","Sep","Oct","Nov","Dec")
+
     def updateState(selectedYear: Int) = {
 
       AppCircuit.dispatch(SetLoadingState())
@@ -89,7 +91,7 @@ object YearlyPanel {
             AppCircuit.dispatch(ClearLoadingState())
 
             $.modState(s => s.copy(
-              labelMonth = xLabel.toSeq,
+              labelMonth = xLabel.toSeq.sortWith( _ < _),
               yearlyFoodExp = yFood.map(x => x.toDouble).toSeq,
               yearlyTransportExp = yTransport.map(x => x.toDouble).toSeq,
               yearlyUtilityExp = yUtility.map(x => x.toDouble).toSeq,
@@ -132,14 +134,19 @@ object YearlyPanel {
             //alignItems = Grid.AlignItems.Center,
             item = true, lg = Grid.Lg._4, xs = Grid.Xs._12, md = Grid.Md._6, spacing = Grid.Spacing._24, sm = Grid.Sm._8)(
             Typography(align = Typography.Align.Center, color = Typography.Color.Primary)("Yearly Spend Dashboard"),
-            Chart(Chart.Props(
-              Chart.LineChart,
+            <.div(
+              Chart(Chart.Props(
+              Chart.BarChart,
               ChartData(
-                state.labelMonth,
+                state.labelMonth.map(x => monthNames(x.substring(4).replace("0","").toInt - 1)),
                 Seq(ChartDataset(0, state.yearlyFoodExp, "Food"),
                   ChartDataset(1, state.yearlyTransportExp, "Transport"),
                   ChartDataset(2, state.yearlyUtilityExp, "Utility"))
-                )
+                ))
+              ).when(!state.labelMonth.isEmpty),
+              <.div(
+                Typography(align = Typography.Align.Center, color = Typography.Color.Primary)("No Data available")
+                .when(state.labelMonth.isEmpty)
               )
             )
           )
@@ -149,7 +156,7 @@ object YearlyPanel {
   }
 
   val Component = ScalaComponent.builder[Props]("YearlyPage")
-    .initialState(State(0,Seq(""),Seq(0),Seq(0),Seq(0)))
+    .initialState(State(0,Seq(),Seq(),Seq(),Seq()))
     .renderBackend[Backend]
     .componentDidMount(scope => scope.backend.mounted)
     .build

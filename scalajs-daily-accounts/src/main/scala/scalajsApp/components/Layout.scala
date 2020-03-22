@@ -123,7 +123,7 @@ object Layout {
                   MenuItem(onClick = onMenuClick _)(VdomNode(LayoutModel.AboutMenu.name))
                 ),
                 Typography(variant = Typography.Variant.H6, color = Typography.Color.Inherit)(
-                  "My Daily Expense Tracker"
+                  "My Expense Tracker"
                 )
               ),
               if (state.showTab ==  true) {
