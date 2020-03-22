@@ -18,7 +18,7 @@ scalaJSModuleKind := ModuleKind.CommonJSModule
 emitSourceMaps := false
 
 
-libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.8"
+//libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.8"
 libraryDependencies += "com.github.japgolly.scalajs-react" %%% "core" % "1.6.0"
 libraryDependencies += "com.github.japgolly.scalajs-react" %%% "extra" % "1.6.0"
 libraryDependencies += "com.github.japgolly.scalajs-react" %%% "test" % "1.6.0"

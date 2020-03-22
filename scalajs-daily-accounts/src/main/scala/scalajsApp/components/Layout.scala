@@ -30,6 +30,7 @@ object LayoutModel {
   val tabCollection = List(TabToday,TabCurrentMonth,TabLastMonth)
 
   case class MenuItemName(name: String, page: Option[Page])
+  val HomeMenu = MenuItemName("Home", Some(AppRouter.CurrentMonthExpenses))
   val YearlyMenu = MenuItemName("Yearly Expense", Some(AppRouter.YearlyExpenses))
   val AboutMenu = MenuItemName("About", None)
 
@@ -52,6 +53,7 @@ object Layout {
   case class State (selectedTabIdx : String,
                     menuHtmlElement : js.Any,
                     showMenu : Boolean,
+                    showTab: Boolean,
                     showAbout: Boolean
                    )
 
@@ -77,7 +79,7 @@ object Layout {
 
     def onMenuIconClick(e: ReactMouseEvent) = {
       val tag = e.target
-      $.modState(s => s.copy(menuHtmlElement = tag,showMenu = true))
+      $.modState(s => s.copy(menuHtmlElement = tag,showMenu = true, showTab = false))
     }
 
     def handleClose  = {
@@ -89,10 +91,15 @@ object Layout {
       menu match {
         case LayoutModel.YearlyMenu.name => {
           $.props.flatMap(p => p.ctl.set(LayoutModel.YearlyMenu.page.get)) >>
-          $.modState(s => s.copy(showMenu = false))
+          $.modState(s => s.copy(showMenu = false, showTab = false))
         }
         case LayoutModel.AboutMenu.name => {
-          $.modState(s => s.copy(showMenu = false,showAbout = true))
+          $.props.flatMap(p => p.ctl.set(LayoutModel.TabToday.page)) >>
+          $.modState(s => s.copy(showMenu = false,showAbout = true, showTab = true))
+        }
+        case LayoutModel.HomeMenu.name => {
+          $.props.flatMap(p => p.ctl.set(LayoutModel.TabToday.page)) >>
+          $.modState(s => s.copy(showMenu = false,showAbout = false, showTab = true))
         }
       }
 
@@ -111,6 +118,7 @@ object Layout {
                   MenuIcon()
                 ),
                   Menu(open = state.showMenu, anchorEl = state.menuHtmlElement, onClose = handleClose)(
+                    MenuItem(onClick = onMenuClick _)(VdomNode(LayoutModel.HomeMenu.name)),
                   MenuItem(onClick = onMenuClick _)(VdomNode(LayoutModel.YearlyMenu.name)),
                   MenuItem(onClick = onMenuClick _)(VdomNode(LayoutModel.AboutMenu.name))
                 ),
@@ -118,15 +126,20 @@ object Layout {
                   "My Daily Expense Tracker"
                 )
               ),
-
-              Tabs(theme = theme,
-                value = Some(js.Any.fromString(state.selectedTabIdx)).orUndefined,
-                centered = true,
-                onChange = onTabChange _)(
-                Tab(label = VdomNode(LayoutModel.TabLastMonth.name),value = Some(js.Any.fromString(LayoutModel.TabLastMonth.id)).orUndefined),
-                Tab(label = VdomNode(LayoutModel.TabToday.name),value = Some(js.Any.fromString(LayoutModel.TabToday.id)).orUndefined),
-                Tab(label = VdomNode(LayoutModel.TabCurrentMonth.name),value = Some(js.Any.fromString(LayoutModel.TabCurrentMonth.id)).orUndefined),
-              )
+              if (state.showTab ==  true) {
+                Tabs(theme = theme,
+                  value = Some(js.Any.fromString(state.selectedTabIdx)).orUndefined,
+                  centered = true,
+                  onChange = onTabChange _)(
+                  Tab(label = VdomNode(LayoutModel.TabLastMonth.name), value = Some(js.Any.fromString(LayoutModel.TabLastMonth.id)).orUndefined),
+                  Tab(label = VdomNode(LayoutModel.TabToday.name), value = Some(js.Any.fromString(LayoutModel.TabToday.id)).orUndefined),
+                  Tab(label = VdomNode(LayoutModel.TabCurrentMonth.name), value = Some(js.Any.fromString(LayoutModel.TabCurrentMonth.id)).orUndefined),
+                )
+              }
+              else
+                {
+                  EmptyVdom
+                }
             ),
 
             // Render the Component resolved by the Router
@@ -144,7 +157,7 @@ object Layout {
   }
 
   val Component = ScalaComponent.builder[Props]("Layout")
-    .initialState(State(selectedTabIdx = "two",null, false,false))
+    .initialState(State(selectedTabIdx = "two",null, false,true, false))
     .renderBackend[Backend]
     .componentDidMount(scope => scope.backend.mounted)
     .build
