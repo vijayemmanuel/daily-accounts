@@ -82,20 +82,20 @@ class PutExpenseScalaHandler extends Proxy[Req, Resp] {
 
     logger.info("Calling Dynamo Service")
     val date = service.putExpense(input.body.get.in).head
-    val queryResult : List[Expense] = date match {
-      case Right(v:DailyExpenses) => List(Expense(
+    val queryResult : List[Option[Expense]] = date match {
+      case Right(v:DailyExpenses) => List(Some(Expense(
         v.YearMonth.toString() +  (if (v.Day / 10 >= 1) v.Day.toString else "0"+ v.Day.toString),
         v.Food.toString(),
         v.Transport.toString(),
-        v.Utility.toString()))
+        v.Utility.toString())))
       case Left (e:DynamoReadError) => {
         logger.error(e.toString)
-        List(Expense("","","",""))
+        List(None)
 
       }
     }
 
-    val responseBodyOption = input.body.map(req => Resp(queryResult.asInstanceOf[List[Expense]]))
+    val responseBodyOption = input.body.map(req => Resp(queryResult.flatten))//.asInstanceOf[List[Expense]])
     val headers = Map("Access-Control-Allow-Origin" -> "*")
     Right(ProxyResponse(200,Some(headers),responseBodyOption))
 
