@@ -9,7 +9,7 @@ import org.rebeam.mui.NativeSelect
 object ExpenseDaySelect {
 
   case class Props(
-                    day: Int,
+                    date: js.Date,
                     onDayChange: (Int) => CallbackTo[Unit]
                   )
 
@@ -26,11 +26,16 @@ object ExpenseDaySelect {
       props.onDayChange(dayId.toInt)
     }
 
-    val days = List("Sat","Sun","Mon","Tues","Wed","Thurs","Fri")
+    val days = List("Sun","Mon","Tues","Wed","Thurs","Fri","Sat")
 
     NativeSelect(onChange = onChange _) (
-      (1 until props.day+1).reverse.map (d => <.option (^.key := d, ^.value  := d,d + " - " + days(d%7))).toVdomArray
+
+      (1 until props.date.getDate()+1).reverse.map { d =>
+        val modDay = (d + props.date.getDay() - 1) % 7
+        <.option (^.key := d, ^.value  := d,d + " - " + days(modDay))
+        }.toVdomArray
     )
+
 
   }
 

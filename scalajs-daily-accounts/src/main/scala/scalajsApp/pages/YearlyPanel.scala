@@ -64,6 +64,7 @@ object YearlyPanel {
         val preGroup = data.map { value =>
             value.map (exp => Expense(exp.Date.substring(0,6),exp.Food,exp.Transport,exp.Utility))
           }
+
         val group = preGroup.map ( value => value.groupBy( exp => exp.Date) )
 
         val groupSum = group.map ( value => value.map {exp =>
@@ -83,18 +84,20 @@ object YearlyPanel {
         Callback.future(
 
         groupSum.map { value =>
-            val xLabel = value.map(exp => exp.Date.toString)
-            val yFood = value.map(exp => exp.Food)
-            val yTransport = value.map(exp => exp.Transport)
-            val yUtility = value.map(exp => exp.Utility)
+          // Sort the Expense based on date
+            val sorted = value.toSeq.sortWith(_.Date < _.Date)
+            val xLabel = sorted.map(exp => exp.Date.toString)
+            val yFood = sorted.map(exp => exp.Food)
+            val yTransport = sorted.map(exp => exp.Transport)
+            val yUtility = sorted.map(exp => exp.Utility)
 
             AppCircuit.dispatch(ClearLoadingState())
 
             $.modState(s => s.copy(
-              labelMonth = xLabel.toSeq.sortWith( _ < _),
-              yearlyFoodExp = yFood.map(x => x.toDouble).toSeq,
-              yearlyTransportExp = yTransport.map(x => x.toDouble).toSeq,
-              yearlyUtilityExp = yUtility.map(x => x.toDouble).toSeq,
+              labelMonth = xLabel,
+              yearlyFoodExp = yFood.map(x => x.toDouble),
+              yearlyTransportExp = yTransport.map(x => x.toDouble),
+              yearlyUtilityExp = yUtility.map(x => x.toDouble),
             ))
          }
         )
@@ -143,6 +146,7 @@ object YearlyPanel {
                   ChartDataset(1, state.yearlyTransportExp, "Transport"),
                   ChartDataset(2, state.yearlyUtilityExp, "Utility"))
                 ))
+
               ).when(!state.labelMonth.isEmpty),
               <.div(
                 Typography(align = Typography.Align.Center, color = Typography.Color.Primary)("No Data available")

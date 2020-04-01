@@ -48,7 +48,7 @@ object CurrentMonthPanel {
 
     val host = Config.AppConfig.apiHost
 
-    val day = new js.Date().getDate()
+    val date = new js.Date()
     val month = new js.Date().getMonth() + 1 // Note the JS month starts from 0
     val year = new js.Date().getFullYear()
 
@@ -205,7 +205,7 @@ object CurrentMonthPanel {
             justify = Grid.Justify.Center,
             alignItems = Grid.AlignItems.Center)(
               Typography(align = Typography.Align.Center,color = Typography.Color.Primary)("Select Day : "),
-              ExpenseDaySelect (ExpenseDaySelect.Props(day,onExpenseDayChange))
+              ExpenseDaySelect (ExpenseDaySelect.Props(date, onExpenseDayChange))
             ),
           <.br(),
           <.br(),
