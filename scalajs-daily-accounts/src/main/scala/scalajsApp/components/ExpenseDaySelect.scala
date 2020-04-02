@@ -31,8 +31,7 @@ object ExpenseDaySelect {
     NativeSelect(onChange = onChange _) (
 
       (1 until props.date.getDate()+1).reverse.map { d =>
-        val modDay = (d + props.date.getDay() - 1) % 7
-        <.option (^.key := d, ^.value  := d,d + " - " + days(modDay))
+        <.option (^.key := d, ^.value  := d,d + " - " + days((props.date.getDay() - (props.date.getDate()- d)) % 7))
         }.toVdomArray
     )
 
