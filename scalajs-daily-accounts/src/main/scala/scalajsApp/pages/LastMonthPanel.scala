@@ -31,6 +31,7 @@ object LastMonthPanel {
   case class State (var foodSum : Int,
                     var transportSum : Int,
                     var utilitySum: Int,
+                    var otherSum: Int,
                    )
 
   case class Props(
@@ -60,7 +61,7 @@ object LastMonthPanel {
         dom.ext.Ajax.get(url = s"$host/dev/expense?date=$lastmonthId").map(xhr => {
           val option = decode[ExpenseResponse](xhr.responseText)
           option match {
-            case Left(failure) => List(Expense("0", "0", "0", "0"))
+            case Left(failure) => List(Expense("0", "0", "0", "0","0"))
             case Right(data) => data.message
           }
         })
@@ -80,8 +81,11 @@ object LastMonthPanel {
             val utilityOnly = value.map(p => p.Utility.toInt)
             var utilitySum = utilityOnly.fold(0)((a: Int, b: Int) => a + b)
 
+            val otherOnly = value.map(p => p.Other.toInt)
+            var otherSum = otherOnly.fold(0)((a: Int, b: Int) => a + b)
+
             AppCircuit.dispatch(ClearLoadingState())
-            $.modState(s => s.copy(foodSum = foodSum, transportSum = transportSum, utilitySum = utilitySum))
+            $.modState(s => s.copy(foodSum = foodSum, transportSum = transportSum, utilitySum = utilitySum, otherSum = otherSum))
           }
         )
       }
@@ -141,7 +145,15 @@ object LastMonthPanel {
             justify = Grid.Justify.SpaceAround,
             alignItems = Grid.AlignItems.Center,
             item = true, lg = Grid.Lg._4)(
-            ExpenseField(ExpenseField.Props("Total Monthly Expense",state.foodSum + state.transportSum + state.utilitySum,( _:Int,  _:String) => Callback.empty,true))
+            ExpenseField(ExpenseField.Props("Other Expense",state.otherSum,( _:Int,  _:String) => Callback.empty, true))
+          ),
+          <.br(),
+          <.br(),
+          Grid(container = true, direction = Grid.Direction.Row,
+            justify = Grid.Justify.SpaceAround,
+            alignItems = Grid.AlignItems.Center,
+            item = true, lg = Grid.Lg._4)(
+            ExpenseField(ExpenseField.Props("Total Monthly Expense",state.foodSum + state.transportSum + state.utilitySum + state.otherSum,( _:Int,  _:String) => Callback.empty,true))
           )
         )
 
@@ -151,7 +163,7 @@ object LastMonthPanel {
   }
 
   val Component = ScalaComponent.builder[Props]("LastMonthPage")
-    .initialState(State(0,0,0))
+    .initialState(State(0,0,0,0))
     .renderBackend[Backend]
     .componentDidMount(scope => scope.backend.mounted)
     .build

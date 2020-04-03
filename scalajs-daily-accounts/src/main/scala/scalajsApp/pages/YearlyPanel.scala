@@ -28,7 +28,8 @@ object YearlyPanel {
                     labelMonth: Seq[String],
                     yearlyFoodExp: Seq[Double],
                     yearlyTransportExp: Seq[Double],
-                    yearlyUtilityExp: Seq[Double]
+                    yearlyUtilityExp: Seq[Double],
+                    yearlyOtherExp: Seq[Double]
                   )
   case class Props(
                     proxy: ModelProxy[AppState],
@@ -52,7 +53,7 @@ object YearlyPanel {
         dom.ext.Ajax.get(url = s"$host/dev/expense?date=$selectedYear").map(xhr => {
           val option = decode[ExpenseResponse](xhr.responseText)
           option match {
-            case Left(failure) => List(Expense("0", "0", "0", "0"))
+            case Left(failure) => List(Expense("0", "0", "0", "0","0"))
             case Right(data) => data.message
           }
         })
@@ -62,7 +63,7 @@ object YearlyPanel {
 
         // Create group of expenses for same month
         val preGroup = data.map { value =>
-            value.map (exp => Expense(exp.Date.substring(0,6),exp.Food,exp.Transport,exp.Utility))
+            value.map (exp => Expense(exp.Date.substring(0,6),exp.Food,exp.Transport,exp.Utility,exp.Other))
           }
 
         val group = preGroup.map ( value => value.groupBy( exp => exp.Date) )
@@ -78,7 +79,10 @@ object YearlyPanel {
             val utilityOnly = exp._2.map(p => p.Utility.toInt)
             var utilitySum = utilityOnly.fold(0)((a: Int, b: Int) => a + b)
 
-          Expense (exp._1,foodSum.toString, transportSum.toString, utilitySum.toString)
+          val otherOnly = exp._2.map(p => p.Other.toInt)
+          var otherSum = otherOnly.fold(0)((a: Int, b: Int) => a + b)
+
+          Expense (exp._1,foodSum.toString, transportSum.toString, utilitySum.toString, otherSum.toString)
         })
 
         Callback.future(
@@ -90,6 +94,7 @@ object YearlyPanel {
             val yFood = sorted.map(exp => exp.Food)
             val yTransport = sorted.map(exp => exp.Transport)
             val yUtility = sorted.map(exp => exp.Utility)
+            val yOther = sorted.map(exp => exp.Other)
 
             AppCircuit.dispatch(ClearLoadingState())
 
@@ -98,6 +103,7 @@ object YearlyPanel {
               yearlyFoodExp = yFood.map(x => x.toDouble),
               yearlyTransportExp = yTransport.map(x => x.toDouble),
               yearlyUtilityExp = yUtility.map(x => x.toDouble),
+              yearlyOtherExp = yOther.map(x => x.toDouble),
             ))
          }
         )
@@ -144,7 +150,8 @@ object YearlyPanel {
                 state.labelMonth.map(x => monthNames(x.substring(4).replace("0","").toInt - 1)),
                 Seq(ChartDataset(0, state.yearlyFoodExp, "Food"),
                   ChartDataset(1, state.yearlyTransportExp, "Transport"),
-                  ChartDataset(2, state.yearlyUtilityExp, "Utility"))
+                  ChartDataset(2, state.yearlyUtilityExp, "Utility"),
+                  ChartDataset(3, state.yearlyOtherExp, "Other"))
                 ))
 
               ).when(!state.labelMonth.isEmpty),
@@ -160,7 +167,7 @@ object YearlyPanel {
   }
 
   val Component = ScalaComponent.builder[Props]("YearlyPage")
-    .initialState(State(0,Seq(),Seq(),Seq(),Seq()))
+    .initialState(State(0,Seq(),Seq(),Seq(),Seq(),Seq()))
     .renderBackend[Backend]
     .componentDidMount(scope => scope.backend.mounted)
     .build

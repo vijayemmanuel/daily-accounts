@@ -18,7 +18,7 @@ import scalajsApp.config.Config
 import io.circe.parser.decode
 import io.circe.generic.auto._
 import io.circe.syntax._
-import scalajsApp.diode.{AddFoodExpense, AddTransportExpense, AddUtilityExpense, AppCircuit, AppState, ClearLoadingState, SetLoadingState}
+import scalajsApp.diode.{AddFoodExpense, AddOtherExpense, AddTransportExpense, AddUtilityExpense, AppCircuit, AppState, ClearLoadingState, SetLoadingState}
 import scalajsApp.models.NotifType.NotifType
 
 import scala.concurrent.Future
@@ -31,6 +31,7 @@ object ExpenditurePanel {
   case class State (var foodExp : Int,
                     var transportExp : Int,
                     var utilityExp: Int,
+                    var otherExp: Int,
                     var saveNotifStatus: Boolean,
                     var saveNotifType: NotifType
                    )
@@ -66,7 +67,7 @@ object ExpenditurePanel {
           option match {
             case Left(failure) => {
 
-              Expense("-2", "-2", "-2", "-2")
+              Expense("-2", "-2", "-2", "-2","-2")
             }
             case Right(data) => data.message.head
           }
@@ -77,7 +78,8 @@ object ExpenditurePanel {
 
         $.modState(s => s.copy(foodExp = Try(value.Food.toInt).toOption.getOrElse(-1),
           transportExp = Try(value.Transport.toInt).toOption.getOrElse(-1),
-          utilityExp = Try(value.Utility.toInt).toOption.getOrElse(-1))).runNow()
+          utilityExp = Try(value.Utility.toInt).toOption.getOrElse(-1),
+          otherExp = Try(value.Other.toInt).toOption.getOrElse(-1))).runNow()
       }
     }
 
@@ -92,11 +94,12 @@ object ExpenditurePanel {
               $.state.map(s => s.foodExp).runNow().toString,
               $.state.map(s => s.transportExp).runNow().toString,
               $.state.map(s => s.utilityExp).runNow().toString,
+              $.state.map(s => s.otherExp).runNow().toString,
             )
           ).asJson.toString).map(xhr => {
           val option = decode[ExpenseResponse](xhr.responseText)
           option match {
-            case Left(failure) => Expense("-2", "-2", "-2", "-2")
+            case Left(failure) => Expense("-2", "-2", "-2", "-2","-2")
             case Right(data) => data.message.head
           }
         })
@@ -104,7 +107,7 @@ object ExpenditurePanel {
 
       Callback.future(saveData().map( value =>  value match {
           // Handle possible network issues.
-        case Expense("-2", "-2", "-2", "-2") =>
+        case Expense("-2", "-2", "-2", "-2","-2") =>
           AppCircuit.dispatch(ClearLoadingState())
           $.modState (s => s.copy (saveNotifStatus = true, saveNotifType = NotifType.Error))
 
@@ -112,8 +115,9 @@ object ExpenditurePanel {
           AppCircuit.dispatch(ClearLoadingState())
           // Return -1 if there was wrong data (non Int) stored in database.
         $.modState (s => s.copy (foodExp = Try (value.Food.toInt).toOption.getOrElse (- 1),
-        transportExp = Try (value.Transport.toInt).toOption.getOrElse (- 1),
-        utilityExp = Try (value.Utility.toInt).toOption.getOrElse (- 1),
+          transportExp = Try (value.Transport.toInt).toOption.getOrElse (- 1),
+          utilityExp = Try (value.Utility.toInt).toOption.getOrElse (- 1),
+          otherExp = Try (value.Other.toInt).toOption.getOrElse (- 1),
           saveNotifStatus = true, saveNotifType = NotifType.Success) )
       }) // Recover with error if exception is re thrown.
         .recover { case e: Exception =>  AppCircuit.dispatch(ClearLoadingState())
@@ -146,6 +150,12 @@ object ExpenditurePanel {
             // Update the local state so as to propagate to props in children
             $.modState(s => s.copy(utilityExp = value)).runNow()
           }
+          case "Other Amount" => {
+            // Dispatch to diode
+            AppCircuit.dispatch(AddOtherExpense(date = dayId.toInt, other = value))
+            // Update the local state so as to propagate to props in children
+            $.modState(s => s.copy(otherExp = value)).runNow()
+          }
 
         }
       }
@@ -173,6 +183,9 @@ object ExpenditurePanel {
           <.br(),
           <.br(),
           ExpenseField(ExpenseField.Props("Utility Amount",state.utilityExp,onExpenseValueChange, false)),
+          <.br(),
+          <.br(),
+          ExpenseField(ExpenseField.Props("Other Amount",state.otherExp,onExpenseValueChange, false)),
         <.br(),
           <.br(),
           Button(variant =  Button.Variant.Contained,color = Button.Color.Primary,onClick = onSave _,disabled = props.proxy().isLoading)(
@@ -184,7 +197,7 @@ object ExpenditurePanel {
   }
 
   val Component = ScalaComponent.builder[Props]("ExpenditurePage")
-    .initialState(State(0,0,0,false,NotifType.Error))
+    .initialState(State(0,0,0,0,false,NotifType.Error))
     .renderBackend[Backend]
     .componentDidMount(scope => scope.backend.mounted)
     .build

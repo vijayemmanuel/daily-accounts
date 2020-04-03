@@ -7,6 +7,7 @@ case class AppState (
                       foodExpense: Int,
                       transportExpense: Int,
                       utilityExpense: Int,
+                      otherExpense: Int,
                       isLoading: Boolean,
                     )
 
@@ -23,6 +24,8 @@ case class AddFoodExpense(date: Int, food: Int) extends Action
 case class AddTransportExpense(date: Int, transport: Int) extends Action
 
 case class AddUtilityExpense(date: Int, utility: Int) extends Action
+
+case class AddOtherExpense(date: Int, other: Int) extends Action
 
 case class RemoveExpense(date : Int) extends Action
 

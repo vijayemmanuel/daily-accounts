@@ -5,7 +5,8 @@ case class Expense(
                    Date: String,
                    Food: String,
                    Transport: String,
-                   Utility: String
+                   Utility: String,
+                   Other: String
                   )
 
 case class ExpenseResponse (

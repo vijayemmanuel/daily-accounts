@@ -16,18 +16,18 @@ import com.amazonaws.services.dynamodbv2.model.ScalarAttributeType._
 
 import scala.language.existentials
 
-case class DailyExpenses( YearMonth: Long, Day: Long, Food: Long, Transport: Long, Utility: Long)
+case class DailyExpenses( YearMonth: Long, Day: Long, Food: Long, Transport: Long, Utility: Long, Other: Long)
 
 class DynamoService {
 
   val logger: Logger = LogManager.getLogger(getClass)
 
-  val awsCreds = new BasicAWSCredentials("XXXXXX","XXXXXXXXX")
+  val awsCreds = new BasicAWSCredentials("XXXXXXXX","XXXXXXXXX")
 
   val client = AmazonDynamoDBClient
     .builder()
     //.withRegion(Regions.AP_SOUTH_1)
-    //.withCredentials(new AWSStaticCredentialsProvider(awsCreds))
+    .withCredentials(new AWSStaticCredentialsProvider(awsCreds))
     .build()
 
   val table = Table[DailyExpenses]("DailyExpenses2")
@@ -73,7 +73,8 @@ class DynamoService {
         item.Date.substring(6,8).toLong,
         item.Food.toLong,
         item.Transport.toLong,
-        item.Utility.toLong))
+        item.Utility.toLong,
+        item.Other.toLong))
       survivors <- table.query("YearMonth" -> item.Date.substring(0,6).toLong and "Day" -> item.Date.substring(6,8).toLong)
     } yield (survivors)
 

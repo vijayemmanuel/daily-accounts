@@ -10,6 +10,7 @@ object AppCircuit extends Circuit[AppModel] with ReactConnector[AppModel] {
       foodExpense = 0,
       transportExpense = 0,
       utilityExpense = 0,
+      otherExpense = 0,
       isLoading = false,
     )
   )
@@ -27,7 +28,8 @@ class ExpenditurePageHandler[M](modelRW: ModelRW[M, AppState]) extends ActionHan
     }
     case AddTransportExpense(date, transportExpense) => updated(value.copy(date = date, transportExpense = transportExpense))
     case AddUtilityExpense(date, utilityExpense) => updated(value.copy(date = date, utilityExpense = utilityExpense))
-    case RemoveExpense(date) => updated(value.copy(date = date, foodExpense = 0, transportExpense = 0, utilityExpense = 0 ))
+    case AddOtherExpense(date, otherExpense) => updated(value.copy(date = date, otherExpense = otherExpense))
+    case RemoveExpense(date) => updated(value.copy(date = date, foodExpense = 0, transportExpense = 0, utilityExpense = 0, otherExpense = 0  ))
     case SetLoadingState() => updated(value.copy(isLoading = true))
     case ClearLoadingState() => updated(value.copy(isLoading = false))
   }

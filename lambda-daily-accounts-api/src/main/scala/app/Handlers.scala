@@ -18,7 +18,7 @@ class ScalaHandler extends Lambda[Req, Resp] {
   //val logger: Logger = LogManager.getLogger(getClass)
 
   override def handle(req: Req, context: Context): Either[Throwable, Resp] = {
-    Right(Resp(List(Expense(DateTime.now().toString(),"","",""))))
+    Right(Resp(List(Expense(DateTime.now().toString(),"","","",""))))
   }
 }
 
@@ -41,17 +41,19 @@ class GetExpenseScalaHandler extends Proxy[Req, Resp] {
       case Right(v:DailyExpenses) if (date.length == 6 || date.length == 8) =>
         //logger.info("Date requested " + date + "Date id " + v.YearMonth.toString())
         Some(Expense(
-        v.YearMonth.toString() +  (if (v.Day / 10 >= 1) v.Day.toString else "0"+ v.Day.toString),
-        v.Food.toString(),
-        v.Transport.toString(),
-        v.Utility.toString()))
+          v.YearMonth.toString() +  (if (v.Day / 10 >= 1) v.Day.toString else "0"+ v.Day.toString),
+          v.Food.toString(),
+          v.Transport.toString(),
+          v.Utility.toString(),
+          v.Other.toString()))
       case Right(v:DailyExpenses) if (date.length == 4 && v.YearMonth.toString().substring(0, 4) == date) =>
         //logger.info("Year requested " + date + "Date id " + v.YearMonth.toString())
         Some(Expense(
-        v.YearMonth.toString() +  (if (v.Day / 10 >= 1) v.Day.toString else "0"+ v.Day.toString),
-        v.Food.toString(),
-        v.Transport.toString(),
-        v.Utility.toString()))
+          v.YearMonth.toString() +  (if (v.Day / 10 >= 1) v.Day.toString else "0"+ v.Day.toString),
+          v.Food.toString(),
+          v.Transport.toString(),
+          v.Utility.toString(),
+          v.Other.toString()))
       case Right(v:DailyExpenses) if (date.length == 4 && v.YearMonth.toString().substring(0, 4) != date) =>
         //logger.info("Year requested " + date + "Date id " + v.YearMonth.toString())
         None
@@ -87,7 +89,8 @@ class PutExpenseScalaHandler extends Proxy[Req, Resp] {
         v.YearMonth.toString() +  (if (v.Day / 10 >= 1) v.Day.toString else "0"+ v.Day.toString),
         v.Food.toString(),
         v.Transport.toString(),
-        v.Utility.toString())))
+        v.Utility.toString(),
+        v.Other.toString())))
       case Left (e:DynamoReadError) => {
         logger.error(e.toString)
         List(None)

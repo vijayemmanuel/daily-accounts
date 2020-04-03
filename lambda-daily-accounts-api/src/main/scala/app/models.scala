@@ -1,6 +1,6 @@
 package app
 
-case class Expense(Date: String, Food: String, Transport: String, Utility: String)
+case class Expense(Date: String, Food: String, Transport: String, Utility: String, Other: String)
 
 object ApiModels {
   case class Req(in: Expense)

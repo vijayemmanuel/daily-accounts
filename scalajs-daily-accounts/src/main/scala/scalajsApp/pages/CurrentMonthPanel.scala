@@ -31,9 +31,11 @@ object CurrentMonthPanel {
   case class State (var foodExp : Int,
                     var transportExp : Int,
                     var utilityExp: Int,
+                    var otherExp: Int,
                     var foodSum : Int,
                     var transportSum : Int,
                     var utilitySum: Int,
+                    var otherSum: Int,
                     var dayId: Int,
                     var saveNotifStatus: Boolean,
                     var saveNotifType: NotifType
@@ -65,7 +67,7 @@ object CurrentMonthPanel {
         dom.ext.Ajax.get(url = s"$host/dev/expense?date=$monthId").map(xhr => {
           val option = decode[ExpenseResponse](xhr.responseText)
           option match {
-            case Left(failure) => List(Expense("0", "0", "0", "0"))
+            case Left(failure) => List(Expense("0", "0", "0", "0","0"))
             case Right(data) => data.message
           }
         })
@@ -85,6 +87,9 @@ object CurrentMonthPanel {
             val utilityOnly = value.map(p => p.Utility.toInt)
             var utilitySum = utilityOnly.fold(0)((a: Int, b: Int) => a + b)
 
+            val otherOnly = value.map(p => p.Other.toInt)
+            var otherSum = otherOnly.fold(0)((a: Int, b: Int) => a + b)
+
             val target = value.filter(p => p.Date.toInt == date)
             AppCircuit.dispatch(ClearLoadingState())
             //Callback.log("Target  Date " + date + " Values :" + target.Food + " ,"+ target.Transport + " ," + target.Utility) >>
@@ -92,9 +97,11 @@ object CurrentMonthPanel {
             $.modState(s => s.copy(foodSum = foodSum,
               transportSum = transportSum,
               utilitySum = utilitySum,
+              otherSum = otherSum,
               foodExp = target.map(t => t.Food.toInt).headOption.getOrElse(0),
               transportExp = target.map(t => t.Transport.toInt).headOption.getOrElse(0),
               utilityExp = target.map(t => t.Utility.toInt).headOption.getOrElse(0),
+              otherExp = target.map(t => t.Other.toInt).headOption.getOrElse(0),
               saveNotifStatus = false))
           }
         )
@@ -132,6 +139,13 @@ object CurrentMonthPanel {
             // Update the local state so as to propagate to props in children
             $.modState(s => s.copy(utilityExp = value)).runNow()
           }
+          case "Other Amount" => {
+            // Dispatch to diode
+            //TODO change monthid to datid
+            //AppCircuit.dispatch(AddOtherExpense(date = monthId.toInt, other = value))
+            // Update the local state so as to propagate to props in children
+            $.modState(s => s.copy(otherExp = value)).runNow()
+          }
         }
       }
 
@@ -147,11 +161,12 @@ object CurrentMonthPanel {
               $.state.map(s => s.foodExp).runNow().toString,
               $.state.map(s => s.transportExp).runNow().toString,
               $.state.map(s => s.utilityExp).runNow().toString,
+              $.state.map(s => s.otherExp).runNow().toString,
             )
           ).asJson.toString).map(xhr => {
           val option = decode[ExpenseResponse](xhr.responseText)
           option match {
-            case Left(failure) => Expense("-2", "-2", "-2", "-2")
+            case Left(failure) => Expense("-2", "-2", "-2", "-2","-2")
             case Right(data) => data.message.head
           }
         })
@@ -160,7 +175,7 @@ object CurrentMonthPanel {
       def modPartialState(data: Future[Expense]) = {
         Callback.future(data.map(value => value match {
           // Handle possible network issues.
-          case Expense("-2", "-2", "-2", "-2") =>
+          case Expense("-2", "-2", "-2", "-2","-2") =>
             AppCircuit.dispatch(ClearLoadingState())
             $.modState(s => s.copy(saveNotifStatus = true, saveNotifType = NotifType.Error))
 
@@ -171,6 +186,7 @@ object CurrentMonthPanel {
               foodExp = Try(value.Food.toInt).toOption.getOrElse(-1),
               transportExp = Try(value.Transport.toInt).toOption.getOrElse(-1),
               utilityExp = Try(value.Utility.toInt).toOption.getOrElse(-1),
+              otherExp = Try(value.Other.toInt).toOption.getOrElse(-1),
               saveNotifStatus = true, saveNotifType = NotifType.Success))
         }) // Recover with error if exception is re thrown.
           .recover { case e: Exception => AppCircuit.dispatch(ClearLoadingState())
@@ -236,6 +252,15 @@ object CurrentMonthPanel {
           ),
           <.br(),
           <.br(),
+          Grid(container = true, direction = Grid.Direction.Row,
+            justify = Grid.Justify.SpaceEvenly,
+            //alignItems = Grid.AlignItems.Center,
+            item = true, lg = Grid.Lg._4, xs = Grid.Xs._12, md = Grid.Md._6, spacing = Grid.Spacing._24,sm = Grid.Sm._8)(
+            ExpenseField(ExpenseField.Props("Other Amount",state.otherExp,onExpenseValueChange, false)),
+            ExpenseField(ExpenseField.Props("Cumulative",state.otherSum,onExpenseValueChange, true)),
+          ),
+          <.br(),
+          <.br(),
           Button(variant =  Button.Variant.Contained,color = Button.Color.Primary,onClick = onSave _,disabled = props.proxy().isLoading)(
             VdomNode("Save")),
             ExpenseSnackBar(ExpenseSnackBar.Props(state.saveNotifStatus, state.saveNotifType))
@@ -255,7 +280,7 @@ object CurrentMonthPanel {
         (if (day.toString.length == 1) "0" + day.toString else day.toString)
 
       // TODO : Get the udpates staus for APp Circuit
-      State(0, 0, 0, 0, 0, 0, dayId.toInt, false, NotifType.Error)
+      State(0, 0, 0, 0, 0, 0, 0, 0, dayId.toInt, false, NotifType.Error)
     }
     .renderBackend[Backend]
     .componentDidMount(scope => scope.backend.mounted)
