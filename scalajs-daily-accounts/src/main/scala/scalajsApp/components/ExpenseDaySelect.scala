@@ -31,7 +31,14 @@ object ExpenseDaySelect {
     NativeSelect(onChange = onChange _) (
 
       (1 until props.date.getDate()+1).reverse.map { d =>
-        <.option (^.key := d, ^.value  := d,d + " - " + days(Math.abs(props.date.getDay() - (props.date.getDate()- d)) % 7))
+        <.option (^.key := d, ^.value  := d,
+          {
+            val t = props.date.getDay() - (props.date.getDate()- d)
+            if (t < 0)
+              d + " - " + days((t + 7 )% 7)
+            else
+              d + " - " + days(t % 7)
+          })
         }.toVdomArray
     )
 
