@@ -34,9 +34,13 @@ object ExpenseDaySelect {
         <.option (^.key := d, ^.value  := d,
           {
             val t = props.date.getDay() - (props.date.getDate()- d)
-            if (t < 0)
-              d + " - " + days((t + 7 )% 7)
-            else
+            if (t < 0) {
+              val tt = Math.abs(t) % 7
+              if (tt == 0)
+                d + " - " + days(0)
+              else
+                d + " - " + days((-tt + 7 ) % 7)
+            } else
               d + " - " + days(t % 7)
           })
         }.toVdomArray
