@@ -147,7 +147,7 @@ object YearlyPanel {
               Chart(Chart.Props(
               Chart.BarChart,
               ChartData(
-                state.labelMonth.map(x => monthNames(x.substring(4).replace("0","").toInt - 1)),
+                state.labelMonth.map(x => monthNames(x.substring(4).replaceAll("^0+(?!$)","").toInt - 1)),
                 Seq(ChartDataset(0, state.yearlyFoodExp, "Food"),
                   ChartDataset(1, state.yearlyTransportExp, "Transport"),
                   ChartDataset(2, state.yearlyUtilityExp, "Utility"),

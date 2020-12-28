@@ -48,7 +48,7 @@ object LastMonthPanel {
     val month = new js.Date().getMonth() + 1 // Note the JS month starts from 0
     val year = new js.Date().getFullYear()
 
-    val lastmonthId = if (month == 12) (year-1).toString + "01"
+    val lastmonthId = if (month == 1) (year-1).toString + "12"
     else year.toString + (if ((month - 1).toString.length == 1) "0" + (month - 1).toString else (month - 1).toString)
 
     def updateState = {
